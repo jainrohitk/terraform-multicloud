@@ -1,0 +1,1254 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-slate-950 text-slate-100">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terraform Module 1: Core Fundamentals & Workflow</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts: Inter & JetBrains Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:ital,wght@0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        tfpurple: '#7B42BC',
+                        tfpurplelight: '#9B51E0',
+                        awsamber: '#FF9900',
+                        azureblue: '#0089D6',
+                        gcpred: '#EA4335',
+                        gcpgreen: '#34A853',
+                        gcpblue: '#4285F4'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #475569;
+        }
+        .code-block {
+            background-color: #090d16;
+            border: 1px solid #1e293b;
+        }
+        .terminal-glow {
+            box-shadow: 0 0 25px -5px rgba(123, 66, 188, 0.25);
+        }
+    </style>
+</head>
+<body class="h-full flex flex-col font-sans overflow-hidden bg-slate-950 text-slate-200">
+
+    <!-- Top Navigation Header -->
+    <header class="h-16 bg-slate-900/90 border-b border-slate-800 px-6 flex items-center justify-between z-20 shrink-0 backdrop-blur-md">
+        <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-lg bg-gradient-to-tr from-purple-600 to-indigo-500 flex items-center justify-center text-white shadow-lg shadow-purple-900/40">
+                <i class="fa-solid font-bold fa-cubes text-lg"></i>
+            </div>
+            <div>
+                <h1 class="font-bold text-slate-100 text-base leading-tight flex items-center gap-2">
+                    Terraform Architecture Academy
+                    <span class="text-xs bg-purple-950 text-purple-300 border border-purple-800/60 px-2 py-0.5 rounded-full font-mono">Mod 1: Basics</span>
+                </h1>
+                <p class="text-xs text-slate-400">Enterprise Infrastructure as Code Curriculum</p>
+            </div>
+        </div>
+
+        <!-- Global Multi-Cloud Preference Switcher -->
+        <div class="flex items-center gap-4">
+            <div class="hidden md:flex items-center bg-slate-950 border border-slate-800 p-1 rounded-xl text-xs font-medium">
+                <span class="px-2.5 text-slate-400 font-mono text-[11px] uppercase tracking-wider">Cloud Filter:</span>
+                <button onclick="setGlobalCloud('aws')" id="global-btn-aws" class="cloud-global-btn px-3 py-1 rounded-lg flex items-center gap-2 transition-all bg-amber-500/10 text-amber-400 border border-amber-500/30">
+                    <i class="fa-brands fa-aws text-sm"></i> AWS
+                </button>
+                <button onclick="setGlobalCloud('azure')" id="global-btn-azure" class="cloud-global-btn px-3 py-1 rounded-lg flex items-center gap-2 transition-all text-slate-400 hover:text-sky-400">
+                    <i class="fa-brands fa-microsoft text-sm"></i> Azure
+                </button>
+                <button onclick="setGlobalCloud('gcp')" id="global-btn-gcp" class="cloud-global-btn px-3 py-1 rounded-lg flex items-center gap-2 transition-all text-slate-400 hover:text-red-400">
+                    <i class="fa-brands fa-google text-sm"></i> GCP
+                </button>
+            </div>
+
+            <!-- Terminal Simulator Drawer Button -->
+            <button onclick="toggleTerminalModal()" class="px-3.5 py-1.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white rounded-lg text-xs font-semibold shadow-md shadow-purple-900/30 flex items-center gap-2 transition-all">
+                <i class="fa-solid fa-terminal"></i>
+                <span>Interactive CLI Lab</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Workspace Layout -->
+    <div class="flex-1 flex overflow-hidden">
+
+        <!-- Sidebar Navigation -->
+        <aside class="w-72 bg-slate-900/60 border-r border-slate-800 flex flex-col shrink-0 overflow-y-auto">
+            <div class="p-4 border-b border-slate-800/80">
+                <span class="text-xs font-semibold text-purple-400 uppercase tracking-widest font-mono">Module 1 Syllabus</span>
+                <h2 class="text-sm font-bold text-slate-200 mt-1">Core Fundamentals</h2>
+            </div>
+            <nav class="p-3 space-y-1 text-sm font-medium" id="sidebar-nav">
+                <button onclick="switchTopic('topic1')" id="nav-topic1" class="nav-btn w-full text-left px-3.5 py-3 rounded-xl flex items-center gap-3 transition-all bg-purple-600/15 text-purple-300 border border-purple-500/30">
+                    <div class="w-7 h-7 rounded-lg bg-slate-800 flex items-center justify-center text-xs font-mono">01</div>
+                    <div class="truncate">
+                        <div class="font-semibold text-xs leading-tight">HCL Syntax & Structure</div>
+                        <div class="text-[11px] text-slate-400 truncate mt-0.5">Blocks, attributes, types</div>
+                    </div>
+                </button>
+
+                <button onclick="switchTopic('topic2')" id="nav-topic2" class="nav-btn w-full text-left px-3.5 py-3 rounded-xl flex items-center gap-3 transition-all text-slate-400 hover:bg-slate-800/50 hover:text-slate-200">
+                    <div class="w-7 h-7 rounded-lg bg-slate-800 flex items-center justify-center text-xs font-mono">02</div>
+                    <div class="truncate">
+                        <div class="font-semibold text-xs leading-tight">Providers & Requirements</div>
+                        <div class="text-[11px] text-slate-400 truncate mt-0.5">Configuration & Auth</div>
+                    </div>
+                </button>
+
+                <button onclick="switchTopic('topic3')" id="nav-topic3" class="nav-btn w-full text-left px-3.5 py-3 rounded-xl flex items-center gap-3 transition-all text-slate-400 hover:bg-slate-800/50 hover:text-slate-200">
+                    <div class="w-7 h-7 rounded-lg bg-slate-800 flex items-center justify-center text-xs font-mono">03</div>
+                    <div class="truncate">
+                        <div class="font-semibold text-xs leading-tight">Resource Management</div>
+                        <div class="text-[11px] text-slate-400 truncate mt-0.5">Addressing & Dependencies</div>
+                    </div>
+                </button>
+
+                <button onclick="switchTopic('topic4')" id="nav-topic4" class="nav-btn w-full text-left px-3.5 py-3 rounded-xl flex items-center gap-3 transition-all text-slate-400 hover:bg-slate-800/50 hover:text-slate-200">
+                    <div class="w-7 h-7 rounded-lg bg-slate-800 flex items-center justify-center text-xs font-mono">04</div>
+                    <div class="truncate">
+                        <div class="font-semibold text-xs leading-tight">Variables & Outputs</div>
+                        <div class="text-[11px] text-slate-400 truncate mt-0.5">Validation & Secrets</div>
+                    </div>
+                </button>
+
+                <button onclick="switchTopic('topic5')" id="nav-topic5" class="nav-btn w-full text-left px-3.5 py-3 rounded-xl flex items-center gap-3 transition-all text-slate-400 hover:bg-slate-800/50 hover:text-slate-200">
+                    <div class="w-7 h-7 rounded-lg bg-slate-800 flex items-center justify-center text-xs font-mono">05</div>
+                    <div class="truncate">
+                        <div class="font-semibold text-xs leading-tight">Lifecycle CLI Workflow</div>
+                        <div class="text-[11px] text-slate-400 truncate mt-0.5">Init, Plan, Apply, Destroy</div>
+                    </div>
+                </button>
+            </nav>
+
+            <div class="mt-auto p-4 border-t border-slate-800/80 bg-slate-900/40">
+                <div class="text-xs font-semibold text-slate-300 mb-2 flex items-center justify-between">
+                    <span>Curriculum Progress</span>
+                    <span class="text-purple-400 font-mono">20%</span>
+                </div>
+                <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
+                    <div class="bg-gradient-to-r from-purple-500 to-indigo-500 h-full w-1/5"></div>
+                </div>
+                <p class="text-[11px] text-slate-400 mt-2">Next Module: State Management & Remote Backends</p>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="flex-1 overflow-y-auto bg-slate-950 p-6 lg:p-8 space-y-8" id="content-container">
+
+            <!-- TOPIC 1: HCL SYNTAX & STRUCTURE -->
+            <section id="topic1" class="topic-section space-y-8">
+                <!-- Header Card -->
+                <div class="bg-gradient-to-br from-slate-900 via-slate-900 to-purple-950/40 border border-slate-800 rounded-2xl p-6 relative overflow-hidden">
+                    <div class="absolute right-0 top-0 w-96 h-96 bg-purple-600/5 rounded-full filter blur-3xl pointer-events-none"></div>
+                    <div class="flex items-center gap-3 text-purple-400 text-xs font-mono font-semibold uppercase tracking-wider mb-2">
+                        <i class="fa-solid fa-code"></i> Topic 01 • Infrastructure Syntax Specification
+                    </div>
+                    <h2 class="text-2xl lg:text-3xl font-extrabold text-white tracking-tight">HashiCorp Configuration Language (HCL2)</h2>
+                    <p class="text-slate-300 text-sm lg:text-base mt-2 max-w-4xl leading-relaxed">
+                        HCL2 is a declarative, human-readable language designed specifically for defining infrastructure graphs. It balances machine-parsable JSON structures with concise user ergonomics, structural type validation, and dynamic expression evaluation.
+                    </p>
+                    <div class="mt-4 flex flex-wrap gap-2 text-xs">
+                        <a href="https://developer.hashicorp.com/terraform/language/syntax/configuration" target="_blank" rel="noopener noreferrer" class="bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-slate-700 px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition">
+                            <i class="fa-solid fa-book text-purple-400"></i> HCL Syntax Spec <i class="fa-solid fa-arrow-up-right-from-square text-[10px] text-slate-500"></i>
+                        </a>
+                        <a href="https://developer.hashicorp.com/terraform/language/expressions/types" target="_blank" rel="noopener noreferrer" class="bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-slate-700 px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition">
+                            <i class="fa-solid fa-shapes text-indigo-400"></i> Type System Specs <i class="fa-solid fa-arrow-up-right-from-square text-[10px] text-slate-500"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Visual Architecture Diagram: HCL Structural Anatomy -->
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+                    <h3 class="text-base font-bold text-slate-100 flex items-center gap-2 mb-4">
+                        <i class="fa-solid fa-sitemap text-purple-400"></i> Visual Structural Breakdown of an HCL Block
+                    </h3>
+                    <div class="bg-slate-950 p-6 rounded-xl border border-slate-800 font-mono text-xs overflow-x-auto relative">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                            <div class="p-3 bg-purple-950/40 border border-purple-800/50 rounded-lg">
+                                <span class="text-purple-400 font-bold block mb-1">1. Block Type</span>
+                                <p class="text-slate-300 text-[11px] font-sans">Defines the fundamental construct (e.g., <code class="text-amber-300">resource</code>, <code class="text-amber-300">provider</code>, <code class="text-amber-300">variable</code>).</p>
+                            </div>
+                            <div class="p-3 bg-blue-950/40 border border-blue-800/50 rounded-lg">
+                                <span class="text-sky-400 font-bold block mb-1">2. Block Labels</span>
+                                <p class="text-slate-300 text-[11px] font-sans">Specifies target provider type and the unique identifier instance name.</p>
+                            </div>
+                            <div class="p-3 bg-emerald-950/40 border border-emerald-800/50 rounded-lg">
+                                <span class="text-emerald-400 font-bold block mb-1">3. Arguments & Attributes</span>
+                                <p class="text-slate-300 text-[11px] font-sans">Key-value pairs assigning values or expressions to properties.</p>
+                            </div>
+                        </div>
+
+                        <!-- SVG Structural Annotator -->
+                        <div class="bg-slate-900/90 p-4 rounded-lg border border-slate-800 space-y-2 text-slate-300">
+                            <div><span class="text-purple-400 font-bold">resource</span> <span class="text-amber-300">"aws_s3_bucket"</span> <span class="text-sky-300">"enterprise_audit_logs"</span> { <span class="text-slate-500">// Block Type + 2 Labels</span></div>
+                            <div class="pl-6"><span class="text-slate-400">bucket</span> = <span class="text-emerald-300">"corp-audit-logs-2026-prod"</span> <span class="text-slate-500">// Attribute Key = Value (String)</span></div>
+                            <div class="pl-6"><span class="text-slate-400">force_destroy</span> = <span class="text-orange-400">false</span> <span class="text-slate-500">// Boolean primitive</span></div>
+                            <div class="pl-6"><span class="text-slate-400">tags</span> = { <span class="text-slate-500">// Map Primitive</span></div>
+                            <div class="pl-12"><span class="text-slate-400">Environment</span> = <span class="text-emerald-300">"Production"</span></div>
+                            <div class="pl-12"><span class="text-slate-400">ManagedBy</span>   = <span class="text-emerald-300">"Terraform"</span></div>
+                            <div class="pl-6">}</div>
+                            <div>}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Side-by-side Multi-Cloud Examples -->
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+                        <div>
+                            <h3 class="text-base font-bold text-slate-100 flex items-center gap-2">
+                                <i class="fa-solid fa-laptop-code text-indigo-400"></i> HCL Block Syntax: Multi-Cloud Equivalents
+                            </h3>
+                            <p class="text-xs text-slate-400 mt-0.5">Compare exact structural syntax for core cloud storage constructs.</p>
+                        </div>
+                        <div class="flex bg-slate-950 p-1 rounded-lg border border-slate-800 text-xs">
+                            <button onclick="setTabCloud('topic1', 'aws')" id="tab-topic1-aws" class="cloud-tab-topic1 px-3 py-1 rounded-md text-amber-400 bg-amber-500/10 font-medium">AWS</button>
+                            <button onclick="setTabCloud('topic1', 'azure')" id="tab-topic1-azure" class="cloud-tab-topic1 px-3 py-1 rounded-md text-slate-400 font-medium">Azure</button>
+                            <button onclick="setTabCloud('topic1', 'gcp')" id="tab-topic1-gcp" class="cloud-tab-topic1 px-3 py-1 rounded-md text-slate-400 font-medium">GCP</button>
+                        </div>
+                    </div>
+
+                    <!-- AWS Code Block -->
+                    <div id="code-topic1-aws" class="code-container-topic1">
+                        <div class="code-block rounded-xl overflow-hidden">
+                            <div class="bg-slate-900/90 px-4 py-2 border-b border-slate-800 flex justify-between items-center text-xs text-slate-400">
+                                <span>main.tf (AWS S3 Bucket Definition)</span>
+                                <button onclick="copyCode('code-snippet-1-aws')" class="hover:text-white"><i class="fa-regular fa-copy"></i> Copy</button>
+                            </div>
+                            <pre id="code-snippet-1-aws" class="p-4 text-xs font-mono text-slate-200 overflow-x-auto"><code><span class="text-purple-400">terraform</span> {
+  <span class="text-purple-400">required_version</span> = <span class="text-emerald-300 font-semibold">">= 1.6.0"</span>
+}
+
+<span class="text-purple-400">resource</span> <span class="text-amber-300">"aws_s3_bucket"</span> <span class="text-sky-300">"finance_vault"</span> {
+  <span class="text-slate-400">bucket</span>        = <span class="text-emerald-300 font-semibold">"fin-data-vault-091"</span>
+  <span class="text-slate-400">force_destroy</span> = <span class="text-amber-500">false</span>
+
+  <span class="text-slate-400">tags</span> = {
+    <span class="text-slate-300">Compliance</span> = <span class="text-emerald-300 font-semibold">"PCI-DSS"</span>
+    <span class="text-slate-300">CostCenter</span> = <span class="text-emerald-300 font-semibold font-mono">1042</span>
+  }
+}</code></pre>
+                        </div>
+                    </div>
+
+                    <!-- Azure Code Block -->
+                    <div id="code-topic1-azure" class="code-container-topic1 hidden">
+                        <div class="code-block rounded-xl overflow-hidden">
+                            <div class="bg-slate-900/90 px-4 py-2 border-b border-slate-800 flex justify-between items-center text-xs text-slate-400">
+                                <span>main.tf (Azure Blob Storage Account)</span>
+                                <button onclick="copyCode('code-snippet-1-azure')" class="hover:text-white"><i class="fa-regular fa-copy"></i> Copy</button>
+                            </div>
+                            <pre id="code-snippet-1-azure" class="p-4 text-xs font-mono text-slate-200 overflow-x-auto"><code><span class="text-purple-400">resource</span> <span class="text-amber-300">"azurerm_storage_account"</span> <span class="text-sky-300">"finance_vault"</span> {
+  <span class="text-slate-400">name</span>                     = <span class="text-emerald-300 font-semibold">"stfinvault091"</span>
+  <span class="text-slate-400">resource_group_name</span>      = <span class="text-emerald-300 font-semibold">"rg-finance-prod"</span>
+  <span class="text-slate-400">location</span>                 = <span class="text-emerald-300 font-semibold">"eastus"</span>
+  <span class="text-slate-400">account_tier</span>             = <span class="text-emerald-300 font-semibold">"Standard"</span>
+  <span class="text-slate-400">account_replication_type</span> = <span class="text-emerald-300 font-semibold">"GRS"</span>
+
+  <span class="text-slate-400">tags</span> = {
+    <span class="text-slate-300">Compliance</span> = <span class="text-emerald-300 font-semibold">"PCI-DSS"</span>
+  }
+}</code></pre>
+                        </div>
+                    </div>
+
+                    <!-- GCP Code Block -->
+                    <div id="code-topic1-gcp" class="code-container-topic1 hidden">
+                        <div class="code-block rounded-xl overflow-hidden">
+                            <div class="bg-slate-900/90 px-4 py-2 border-b border-slate-800 flex justify-between items-center text-xs text-slate-400">
+                                <span>main.tf (GCP Storage Bucket)</span>
+                                <button onclick="copyCode('code-snippet-1-gcp')" class="hover:text-white"><i class="fa-regular fa-copy"></i> Copy</button>
+                            </div>
+                            <pre id="code-snippet-1-gcp" class="p-4 text-xs font-mono text-slate-200 overflow-x-auto"><code><span class="text-purple-400">resource</span> <span class="text-amber-300">"google_storage_bucket"</span> <span class="text-sky-300">"finance_vault"</span> {
+  <span class="text-slate-400">name</span>          = <span class="text-emerald-300 font-semibold">"gcp-fin-data-vault-091"</span>
+  <span class="text-slate-400">location</span>      = <span class="text-emerald-300 font-semibold">"US-EAST1"</span>
+  <span class="text-slate-400">force_destroy</span> = <span class="text-amber-500">false</span>
+
+  <span class="text-slate-400">uniform_bucket_level_access</span> = <span class="text-amber-500">true</span>
+
+  <span class="text-slate-400">labels</span> = {
+    <span class="text-slate-300">compliance</span> = <span class="text-emerald-300 font-semibold">"pci-dss"</span>
+  }
+}</code></pre>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Interactive Property Reference Sheet -->
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+                        <div>
+                            <h3 class="text-base font-bold text-slate-100 flex items-center gap-2">
+                                <i class="fa-solid fa-table-list text-purple-400"></i> Property Reference: HCL Data Types & Constructs
+                            </h3>
+                            <p class="text-xs text-slate-400">Searchable guide for native language primitives and dynamic block arguments.</p>
+                        </div>
+                        <input type="text" onkeyup="filterTable('table-topic1', this.value)" placeholder="Filter elements..." class="bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-purple-500 w-full sm:w-64">
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table id="table-topic1" class="w-full text-left text-xs border-collapse">
+                            <thead>
+                                <tr class="bg-slate-950 text-slate-400 border-b border-slate-800 font-mono">
+                                    <th class="p-3">Construct / Element</th>
+                                    <th class="p-3">Type / Category</th>
+                                    <th class="p-3">Required</th>
+                                    <th class="p-3">Default Value</th>
+                                    <th class="p-3">Description & Scope</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-800/60 text-slate-300 font-mono">
+                                <tr class="hover:bg-slate-800/30">
+                                    <td class="p-3 font-semibold text-purple-300">string</td>
+                                    <td class="p-3 text-slate-400">Primitive Type</td>
+                                    <td class="p-3 text-amber-400">N/A</td>
+                                    <td class="p-3 text-slate-500">""</td>
+                                    <td class="p-3 font-sans text-slate-300">Sequence of Unicode characters wrapped in double quotes. Supports string interpolation `"${var.name}"`.</td>
+                                </tr>
+                                <tr class="hover:bg-slate-800/30">
+                                    <td class="p-3 font-semibold text-purple-300">number</td>
+                                    <td class="p-3 text-slate-400">Primitive Type</td>
+                                    <td class="p-3 text-amber-400">N/A</td>
+                                    <td class="p-3 text-slate-500">0</td>
+                                    <td class="p-3 font-sans text-slate-300">Integer or floating-point value (e.g., `10`, `3.14`). Automatic conversions occur in HCL.</td>
+                                </tr>
+                                <tr class="hover:bg-slate-800/30">
+                                    <td class="p-3 font-semibold text-purple-300">bool</td>
+                                    <td class="p-3 text-slate-400">Primitive Type</td>
+                                    <td class="p-3 text-amber-400">N/A</td>
+                                    <td class="p-3 text-slate-500">false</td>
+                                    <td class="p-3 font-sans text-slate-300">Boolean truth value (`true` or `false`).</td>
+                                </tr>
+                                <tr class="hover:bg-slate-800/30">
+                                    <td class="p-3 font-semibold text-purple-300">list(&lt;TYPE&gt;)</td>
+                                    <td class="p-3 text-slate-400">Complex Collection</td>
+                                    <td class="p-3 text-amber-400">N/A</td>
+                                    <td class="p-3 text-slate-500">[]</td>
+                                    <td class="p-3 font-sans text-slate-300">Ordered sequence of values of a uniform type indexed starting at 0.</td>
+                                </tr>
+                                <tr class="hover:bg-slate-800/30">
+                                    <td class="p-3 font-semibold text-purple-300">map(&lt;TYPE&gt;)</td>
+                                    <td class="p-3 text-slate-400">Complex Collection</td>
+                                    <td class="p-3 text-amber-400">N/A</td>
+                                    <td class="p-3 text-slate-500">{}</td>
+                                    <td class="p-3 font-sans text-slate-300">Collection of key-value pairs where keys are strings and values share a common type.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 2 Real-World Industry Scenarios -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 relative flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center justify-between mb-3">
+                                <span class="bg-indigo-950 text-indigo-300 text-[10px] font-mono px-2.5 py-1 rounded-full border border-indigo-800/50 uppercase">Use Case Scenario 1.1</span>
+                                <span class="text-xs text-slate-500"><i class="fa-solid fa-building"></i> Enterprise SaaS Platform</span>
+                            </div>
+                            <h4 class="text-base font-bold text-white mb-2">Multi-Tenant Resource Labeling Standard</h4>
+                            <p class="text-xs text-slate-300 leading-relaxed mb-4">
+                                <strong>Challenge:</strong> A fintech firm was incurring untraceable costs due to ad-hoc resource naming without metadata tags across 1,200+ AWS/Azure billing accounts.
+                            </p>
+                            <p class="text-xs text-slate-300 leading-relaxed mb-4">
+                                <strong>Solution via HCL Syntax:</strong> Standardized top-level map primitives for global metadata, combining local attributes with dynamic map merge functions in resource declarations.
+                            </p>
+                        </div>
+                        <div class="p-3 bg-slate-950 rounded-lg border border-slate-800 text-xs font-mono text-emerald-400">
+                            Result: 100% cloud resource tag enforcement across terraform plan validations.
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 relative flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center justify-between mb-3">
+                                <span class="bg-purple-950 text-purple-300 text-[10px] font-mono px-2.5 py-1 rounded-full border border-purple-800/50 uppercase">Use Case Scenario 1.2</span>
+                                <span class="text-xs text-slate-500"><i class="fa-solid fa-shield-halved"></i> Healthcare Compliance</span>
+                            </div>
+                            <h4 class="text-base font-bold text-white mb-2">HIPAA Compliance Code Formatting Audit</h4>
+                            <p class="text-xs text-slate-300 leading-relaxed mb-4">
+                                <strong>Challenge:</strong> Developer teams created inconsistent HCL syntax with hardcoded string paths and non-standard block layouts, leading to failed automated SAST security scans.
+                            </p>
+                            <p class="text-xs text-slate-300 leading-relaxed mb-4">
+                                <strong>Solution via HCL Standards:</strong> Enforced native type constraints and block ordering alongside automated `terraform fmt -check` pre-commit hooks in GitLab CI/CD.
+                            </p>
+                        </div>
+                        <div class="p-3 bg-slate-950 rounded-lg border border-slate-800 text-xs font-mono text-emerald-400">
+                            Result: Zero syntax errors in security pipelines and fully compliant audit reports.
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TOPIC 2: PROVIDERS & REQUIREMENTS -->
+            <section id="topic2" class="topic-section space-y-8 hidden">
+                <div class="bg-gradient-to-br from-slate-900 via-slate-900 to-indigo-950/40 border border-slate-800 rounded-2xl p-6 relative overflow-hidden">
+                    <div class="flex items-center gap-3 text-indigo-400 text-xs font-mono font-semibold uppercase tracking-wider mb-2">
+                        <i class="fa-solid fa-plug"></i> Topic 02 • Provider Plugins & Authentication
+                    </div>
+                    <h2 class="text-2xl lg:text-3xl font-extrabold text-white tracking-tight">Providers, Source Registries & Authentication</h2>
+                    <p class="text-slate-300 text-sm lg:text-base mt-2 max-w-4xl leading-relaxed">
+                        Providers are executable plugins that translate HCL declarations into downstream cloud platform API calls. Terraform utilizes the `required_providers` block to enforce version locks, source namespaces, and regional authentication contexts.
+                    </p>
+                    <div class="mt-4 flex flex-wrap gap-2 text-xs">
+                        <a href="https://developer.hashicorp.com/terraform/language/providers/requirements" target="_blank" rel="noopener noreferrer" class="bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-slate-700 px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition">
+                            <i class="fa-solid fa-book text-indigo-400"></i> Provider Requirements Docs <i class="fa-solid fa-arrow-up-right-from-square text-[10px] text-slate-500"></i>
+                        </a>
+                        <a href="https://registry.terraform.io" target="_blank" rel="noopener noreferrer" class="bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-slate-700 px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition">
+                            <i class="fa-solid fa-store text-amber-400"></i> Terraform Registry <i class="fa-solid fa-arrow-up-right-from-square text-[10px] text-slate-500"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Provider Architecture Diagram -->
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+                    <h3 class="text-base font-bold text-slate-100 flex items-center gap-2 mb-4">
+                        <i class="fa-solid fa-diagram-project text-indigo-400"></i> Provider Plugin Initialization Architecture
+                    </h3>
+                    <div class="bg-slate-950 p-6 rounded-xl border border-slate-800 text-xs font-mono">
+                        <div class="flex flex-col md:flex-row items-center justify-between gap-4 text-center">
+                            <div class="p-4 bg-slate-900 border border-slate-800 rounded-xl w-full">
+                                <i class="fa-solid fa-file-code text-purple-400 text-2xl mb-2"></i>
+                                <div class="font-bold text-slate-200">1. HCL Declarations</div>
+                                <div class="text-[11px] text-slate-500 font-sans mt-1">required_providers { aws = "5.0" }</div>
+                            </div>
+                            <i class="fa-solid fa-arrow-right text-slate-600 hidden md:block"></i>
+                            <div class="p-4 bg-slate-900 border border-indigo-800/60 rounded-xl w-full">
+                                <i class="fa-solid fa-download text-indigo-400 text-2xl mb-2"></i>
+                                <div class="font-bold text-slate-200">2. terraform init</div>
+                                <div class="text-[11px] text-slate-500 font-sans mt-1">Downloads binary to .terraform/providers</div>
+                            </div>
+                            <i class="fa-solid fa-arrow-right text-slate-600 hidden md:block"></i>
+                            <div class="p-4 bg-slate-900 border border-emerald-800/60 rounded-xl w-full">
+                                <i class="fa-solid fa-network-wired text-emerald-400 text-2xl mb-2"></i>
+                                <div class="font-bold text-slate-200">3. gRPC Client Call</div>
+                                <div class="text-[11px] text-slate-500 font-sans mt-1">Calls Cloud APIs via SDK credentials</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Multi-Cloud Code Switcher for Topic 2 -->
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+                        <div>
+                            <h3 class="text-base font-bold text-slate-100 flex items-center gap-2">
+                                <i class="fa-solid fa-key text-emerald-400"></i> Provider Block Configuration & Aliases
+                            </h3>
+                            <p class="text-xs text-slate-400">Configure default and multi-region provider instances.</p>
+                        </div>
+                        <div class="flex bg-slate-950 p-1 rounded-lg border border-slate-800 text-xs">
+                            <button onclick="setTabCloud('topic2', 'aws')" id="tab-topic2-aws" class="cloud-tab-topic2 px-3 py-1 rounded-md text-amber-400 bg-amber-500/10 font-medium">AWS</button>
+                            <button onclick="setTabCloud('topic2', 'azure')" id="tab-topic2-azure" class="cloud-tab-topic2 px-3 py-1 rounded-md text-slate-400 font-medium">Azure</button>
+                            <button onclick="setTabCloud('topic2', 'gcp')" id="tab-topic2-gcp" class="cloud-tab-topic2 px-3 py-1 rounded-md text-slate-400 font-medium">GCP</button>
+                        </div>
+                    </div>
+
+                    <!-- AWS Provider -->
+                    <div id="code-topic2-aws" class="code-container-topic2">
+                        <div class="code-block rounded-xl overflow-hidden">
+                            <div class="bg-slate-900/90 px-4 py-2 border-b border-slate-800 flex justify-between items-center text-xs text-slate-400">
+                                <span>providers.tf (AWS Multi-Region Configuration)</span>
+                                <button onclick="copyCode('code-snippet-2-aws')" class="hover:text-white"><i class="fa-regular fa-copy"></i> Copy</button>
+                            </div>
+                            <pre id="code-snippet-2-aws" class="p-4 text-xs font-mono text-slate-200 overflow-x-auto"><code><span class="text-purple-400">terraform</span> {
+  <span class="text-purple-400">required_providers</span> {
+    <span class="text-slate-300">aws</span> = {
+      <span class="text-slate-400">source</span>  = <span class="text-emerald-300 font-semibold">"hashicorp/aws"</span>
+      <span class="text-slate-400">version</span> = <span class="text-emerald-300 font-semibold">"~> 5.30.0"</span>
+    }
+  }
+}
+
+<span class="text-slate-500"># Default Primary Region</span>
+<span class="text-purple-400">provider</span> <span class="text-amber-300">"aws"</span> {
+  <span class="text-slate-400">region</span> = <span class="text-emerald-300 font-semibold">"us-east-1"</span>
+}
+
+<span class="text-slate-500"># Secondary Region Provider Alias</span>
+<span class="text-purple-400">provider</span> <span class="text-amber-300">"aws"</span> {
+  <span class="text-slate-400">alias</span>  = <span class="text-emerald-300 font-semibold">"west"</span>
+  <span class="text-slate-400">region</span> = <span class="text-emerald-300 font-semibold">"us-west-2"</span>
+}</code></pre>
+                        </div>
+                    </div>
+
+                    <!-- Azure Provider -->
+                    <div id="code-topic2-azure" class="code-container-topic2 hidden">
+                        <div class="code-block rounded-xl overflow-hidden">
+                            <div class="bg-slate-900/90 px-4 py-2 border-b border-slate-800 flex justify-between items-center text-xs text-slate-400">
+                                <span>providers.tf (Azure Provider with Features)</span>
+                                <button onclick="copyCode('code-snippet-2-azure')" class="hover:text-white"><i class="fa-regular fa-copy"></i> Copy</button>
+                            </div>
+                            <pre id="code-snippet-2-azure" class="p-4 text-xs font-mono text-slate-200 overflow-x-auto"><code><span class="text-purple-400">terraform</span> {
+  <span class="text-purple-400">required_providers</span> {
+    <span class="text-slate-300">azurerm</span> = {
+      <span class="text-slate-400">source</span>  = <span class="text-emerald-300 font-semibold">"hashicorp/azurerm"</span>
+      <span class="text-slate-400">version</span> = <span class="text-emerald-300 font-semibold">"~> 3.80.0"</span>
+    }
+  }
+}
+
+<span class="text-purple-400">provider</span> <span class="text-amber-300">"azurerm"</span> {
+  <span class="text-purple-400">features</span> {}
+  <span class="text-slate-400">subscription_id</span> = <span class="text-emerald-300 font-semibold">"00000000-0000-0000-0000-000000000000"</span>
+}</code></pre>
+                        </div>
+                    </div>
+
+                    <!-- GCP Provider -->
+                    <div id="code-topic2-gcp" class="code-container-topic2 hidden">
+                        <div class="code-block rounded-xl overflow-hidden">
+                            <div class="bg-slate-900/90 px-4 py-2 border-b border-slate-800 flex justify-between items-center text-xs text-slate-400">
+                                <span>providers.tf (GCP Provider Block)</span>
+                                <button onclick="copyCode('code-snippet-2-gcp')" class="hover:text-white"><i class="fa-regular fa-copy"></i> Copy</button>
+                            </div>
+                            <pre id="code-snippet-2-gcp" class="p-4 text-xs font-mono text-slate-200 overflow-x-auto"><code><span class="text-purple-400">terraform</span> {
+  <span class="text-purple-400">required_providers</span> {
+    <span class="text-slate-300">google</span> = {
+      <span class="text-slate-400">source</span>  = <span class="text-emerald-300 font-semibold">"hashicorp/google"</span>
+      <span class="text-slate-400">version</span> = <span class="text-emerald-300 font-semibold">"~> 5.10.0"</span>
+    }
+  }
+}
+
+<span class="text-purple-400">provider</span> <span class="text-amber-300">"google"</span> {
+  <span class="text-slate-400">project</span> = <span class="text-emerald-300 font-semibold">"corp-prod-infrastructure"</span>
+  <span class="text-slate-400">region</span>  = <span class="text-emerald-300 font-semibold">"us-central1"</span>
+}</code></pre>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Interactive Property Table -->
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+                        <h3 class="text-base font-bold text-slate-100">Provider Requirements Attributes</h3>
+                        <input type="text" onkeyup="filterTable('table-topic2', this.value)" placeholder="Search provider settings..." class="bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-indigo-500 w-full sm:w-64">
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table id="table-topic2" class="w-full text-left text-xs border-collapse">
+                            <thead>
+                                <tr class="bg-slate-950 text-slate-400 border-b border-slate-800 font-mono">
+                                    <th class="p-3">Attribute</th>
+                                    <th class="p-3">Required</th>
+                                    <th class="p-3">Type</th>
+                                    <th class="p-3">Description</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-800/60 text-slate-300 font-mono">
+                                <tr class="hover:bg-slate-800/30">
+                                    <td class="p-3 text-purple-300">source</td>
+                                    <td class="p-3 text-emerald-400">Yes</td>
+                                    <td class="p-3 text-slate-400">string</td>
+                                    <td class="p-3 font-sans">Global hostname and namespace (e.g., `hashicorp/aws`). Defaults to `registry.terraform.io`.</td>
+                                </tr>
+                                <tr class="hover:bg-slate-800/30">
+                                    <td class="p-3 text-purple-300">version</td>
+                                    <td class="p-3 text-amber-400">Optional</td>
+                                    <td class="p-3 text-slate-400">string</td>
+                                    <td class="p-3 font-sans">Semantic version constraint (e.g., `~> 5.0` allows patch/minor upgrades).</td>
+                                </tr>
+                                <tr class="hover:bg-slate-800/30">
+                                    <td class="p-3 text-purple-300">alias</td>
+                                    <td class="p-3 text-amber-400">Optional</td>
+                                    <td class="p-3 text-slate-400">string</td>
+                                    <td class="p-3 font-sans">Secondary identifier for configuring multiple configurations of the same provider.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Scenarios -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+                        <span class="bg-indigo-950 text-indigo-300 text-[10px] font-mono px-2.5 py-1 rounded-full uppercase">Use Case 2.1</span>
+                        <h4 class="text-base font-bold text-white mt-2 mb-2">Cross-Region Disaster Recovery Replication</h4>
+                        <p class="text-xs text-slate-300 leading-relaxed mb-4">
+                            Deploying KMS-encrypted S3 bucket replication across `us-east-1` and `us-west-2` using provider aliases (`provider = aws.west`).
+                        </p>
+                    </div>
+                    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+                        <span class="bg-indigo-950 text-indigo-300 text-[10px] font-mono px-2.5 py-1 rounded-full uppercase">Use Case 2.2</span>
+                        <h4 class="text-base font-bold text-white mt-2 mb-2">Zero-Trust OIDC Authentication</h4>
+                        <p class="text-xs text-slate-300 leading-relaxed mb-4">
+                            Eliminating static AWS/Azure access keys in GitHub Actions by passing dynamic IAM OIDC role tokens into the provider configuration.
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TOPIC 3: RESOURCE MANAGEMENT -->
+            <section id="topic3" class="topic-section space-y-8 hidden">
+                <div class="bg-gradient-to-br from-slate-900 via-slate-900 to-amber-950/40 border border-slate-800 rounded-2xl p-6 relative overflow-hidden">
+                    <div class="flex items-center gap-3 text-amber-400 text-xs font-mono font-semibold uppercase tracking-wider mb-2">
+                        <i class="fa-solid fa-server"></i> Topic 03 • Resource Lifecycle & Graph Management
+                    </div>
+                    <h2 class="text-2xl lg:text-3xl font-extrabold text-white tracking-tight">Resource Blocks, Addressing & Implicit Dependencies</h2>
+                    <p class="text-slate-300 text-sm lg:text-base mt-2 max-w-4xl leading-relaxed">
+                        Resources represent infrastructure components. Terraform builds a Directed Acyclic Graph (DAG) to determine optimal execution order, automatically managing implicit dependencies established by attribute references between resources.
+                    </p>
+                    <div class="mt-4 flex flex-wrap gap-2 text-xs">
+                        <a href="https://developer.hashicorp.com/terraform/language/resources/syntax" target="_blank" rel="noopener noreferrer" class="bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-slate-700 px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition">
+                            <i class="fa-solid fa-book text-amber-400"></i> Resource Language Spec <i class="fa-solid fa-arrow-up-right-from-square text-[10px] text-slate-500"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Multi-Cloud Code Switcher Topic 3 -->
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+                        <div>
+                            <h3 class="text-base font-bold text-slate-100">Implicit Dependency Graph Linkage</h3>
+                            <p class="text-xs text-slate-400">Referencing outputs from resource A inside resource B creates automatic execution graph ordering.</p>
+                        </div>
+                        <div class="flex bg-slate-950 p-1 rounded-lg border border-slate-800 text-xs">
+                            <button onclick="setTabCloud('topic3', 'aws')" id="tab-topic3-aws" class="cloud-tab-topic3 px-3 py-1 rounded-md text-amber-400 bg-amber-500/10 font-medium">AWS</button>
+                            <button onclick="setTabCloud('topic3', 'azure')" id="tab-topic3-azure" class="cloud-tab-topic3 px-3 py-1 rounded-md text-slate-400 font-medium">Azure</button>
+                            <button onclick="setTabCloud('topic3', 'gcp')" id="tab-topic3-gcp" class="cloud-tab-topic3 px-3 py-1 rounded-md text-slate-400 font-medium">GCP</button>
+                        </div>
+                    </div>
+
+                    <div id="code-topic3-aws" class="code-container-topic3">
+                        <div class="code-block rounded-xl overflow-hidden">
+                            <pre id="code-snippet-3-aws" class="p-4 text-xs font-mono text-slate-200 overflow-x-auto"><code><span class="text-purple-400">resource</span> <span class="text-amber-300">"aws_vpc"</span> <span class="text-sky-300">"main"</span> {
+  <span class="text-slate-400">cidr_block</span> = <span class="text-emerald-300">"10.0.0.0/16"</span>
+}
+
+<span class="text-purple-400">resource</span> <span class="text-amber-300">"aws_subnet"</span> <span class="text-sky-300">"web"</span> {
+  <span class="text-slate-500"># IMPLICIT DEPENDENCY CREATED HERE VIA VPC_ID REFERENCE</span>
+  <span class="text-slate-400">vpc_id</span>     = <span class="text-amber-300">aws_vpc</span>.<span class="text-sky-300">main</span>.<span class="text-purple-300">id</span>
+  <span class="text-slate-400">cidr_block</span> = <span class="text-emerald-300">"10.0.1.0/24"</span>
+}</code></pre>
+                        </div>
+                    </div>
+
+                    <div id="code-topic3-azure" class="code-container-topic3 hidden">
+                        <div class="code-block rounded-xl overflow-hidden">
+                            <pre id="code-snippet-3-azure" class="p-4 text-xs font-mono text-slate-200 overflow-x-auto"><code><span class="text-purple-400">resource</span> <span class="text-amber-300">"azurerm_resource_group"</span> <span class="text-sky-300">"rg"</span> {
+  <span class="text-slate-400">name</span>     = <span class="text-emerald-300">"rg-core"</span>
+  <span class="text-slate-400">location</span> = <span class="text-emerald-300">"eastus"</span>
+}
+
+<span class="text-purple-400">resource</span> <span class="text-amber-300">"azurerm_virtual_network"</span> <span class="text-sky-300">"vnet"</span> {
+  <span class="text-slate-400">name</span>                = <span class="text-emerald-300">"vnet-prod"</span>
+  <span class="text-slate-400">resource_group_name</span> = <span class="text-amber-300">azurerm_resource_group</span>.<span class="text-sky-300">rg</span>.<span class="text-purple-300">name</span>
+  <span class="text-slate-400">location</span>            = <span class="text-amber-300">azurerm_resource_group</span>.<span class="text-sky-300">rg</span>.<span class="text-purple-300">location</span>
+  <span class="text-slate-400">address_space</span>       = [<span class="text-emerald-300">"10.0.0.0/16"</span>]
+}</code></pre>
+                        </div>
+                    </div>
+
+                    <div id="code-topic3-gcp" class="code-container-topic3 hidden">
+                        <div class="code-block rounded-xl overflow-hidden">
+                            <pre id="code-snippet-3-gcp" class="p-4 text-xs font-mono text-slate-200 overflow-x-auto"><code><span class="text-purple-400">resource</span> <span class="text-amber-300">"google_compute_network"</span> <span class="text-sky-300">"vpc"</span> {
+  <span class="text-slate-400">name</span>                    = <span class="text-emerald-300">"custom-vpc"</span>
+  <span class="text-slate-400">auto_create_subnetworks</span> = <span class="text-amber-500">false</span>
+}
+
+<span class="text-purple-400">resource</span> <span class="text-amber-300">"google_compute_subnetwork"</span> <span class="text-sky-300">"subnet"</span> {
+  <span class="text-slate-400">name</span>          = <span class="text-emerald-300">"subnet-us"</span>
+  <span class="text-slate-400">ip_cidr_range</span> = <span class="text-emerald-300">"10.0.1.0/24"</span>
+  <span class="text-slate-400">network</span>       = <span class="text-amber-300">google_compute_network</span>.<span class="text-sky-300">vpc</span>.<span class="text-purple-300">id</span>
+}</code></pre>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Table -->
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+                    <h3 class="text-base font-bold text-slate-100 mb-4">Resource Meta-Arguments Reference</h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs border-collapse">
+                            <thead>
+                                <tr class="bg-slate-950 text-slate-400 border-b border-slate-800 font-mono">
+                                    <th class="p-3">Meta-Argument</th>
+                                    <th class="p-3">Type</th>
+                                    <th class="p-3">Description</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-800/60 text-slate-300 font-mono">
+                                <tr class="hover:bg-slate-800/30">
+                                    <td class="p-3 text-purple-300">depends_on</td>
+                                    <td class="p-3 text-slate-400">list(resource)</td>
+                                    <td class="p-3 font-sans">Explicitly specifies dependencies Terraform cannot automatically infer.</td>
+                                </tr>
+                                <tr class="hover:bg-slate-800/30">
+                                    <td class="p-3 text-purple-300">count</td>
+                                    <td class="p-3 text-slate-400">number</td>
+                                    <td class="p-3 font-sans">Creates multiple identical resource instances indexed by integer (`count.index`).</td>
+                                </tr>
+                                <tr class="hover:bg-slate-800/30">
+                                    <td class="p-3 text-purple-300">for_each</td>
+                                    <td class="p-3 text-slate-400">map / set(string)</td>
+                                    <td class="p-3 font-sans">Creates dynamic resource instances identified by custom string keys (`each.key`).</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Scenarios -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+                        <span class="bg-amber-950 text-amber-300 text-[10px] font-mono px-2.5 py-1 rounded-full uppercase">Use Case 3.1</span>
+                        <h4 class="text-base font-bold text-white mt-2 mb-2">Zero-Downtime Blue/Green EC2 Replacement</h4>
+                        <p class="text-xs text-slate-300 leading-relaxed mb-4">
+                            Utilizing `lifecycle { create_before_destroy = true }` to spin up updated web servers before terminating legacy nodes.
+                        </p>
+                    </div>
+                    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+                        <span class="bg-amber-950 text-amber-300 text-[10px] font-mono px-2.5 py-1 rounded-full uppercase">Use Case 3.2</span>
+                        <h4 class="text-base font-bold text-white mt-2 mb-2">Preventing Accidental Database Destruction</h4>
+                        <p class="text-xs text-slate-300 leading-relaxed mb-4">
+                            Setting `lifecycle { prevent_destroy = true }` on production RDS / Cloud SQL databases to block catastrophic automated teardowns.
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TOPIC 4: VARIABLES & OUTPUTS -->
+            <section id="topic4" class="topic-section space-y-8 hidden">
+                <div class="bg-gradient-to-br from-slate-900 via-slate-900 to-emerald-950/40 border border-slate-800 rounded-2xl p-6 relative overflow-hidden">
+                    <div class="flex items-center gap-3 text-emerald-400 text-xs font-mono font-semibold uppercase tracking-wider mb-2">
+                        <i class="fa-solid fa-sliders"></i> Topic 04 • Input Variables, Validation & Sensitive Outputs
+                    </div>
+                    <h2 class="text-2xl lg:text-3xl font-extrabold text-white tracking-tight">Input Parameterization & Output Contracts</h2>
+                    <p class="text-slate-300 text-sm lg:text-base mt-2 max-w-4xl leading-relaxed">
+                        Input variables serve as configurable parameters for custom module reusability, complete with validation rules. Output values expose resource attributes to parent modules or external orchestration CLI commands.
+                    </p>
+                    <div class="mt-4 flex flex-wrap gap-2 text-xs">
+                        <a href="https://developer.hashicorp.com/terraform/language/values/variables" target="_blank" rel="noopener noreferrer" class="bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-slate-700 px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition">
+                            <i class="fa-solid fa-book text-emerald-400"></i> Input Variables Doc <i class="fa-solid fa-arrow-up-right-from-square text-[10px] text-slate-500"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Code Switcher Topic 4 -->
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+                        <div>
+                            <h3 class="text-base font-bold text-slate-100">Input Validation & Sensitive Flags</h3>
+                            <p class="text-xs text-slate-400">Validate environment strings and mask confidential passwords in console logs.</p>
+                        </div>
+                        <div class="flex bg-slate-950 p-1 rounded-lg border border-slate-800 text-xs">
+                            <button onclick="setTabCloud('topic4', 'aws')" id="tab-topic4-aws" class="cloud-tab-topic4 px-3 py-1 rounded-md text-amber-400 bg-amber-500/10 font-medium">AWS</button>
+                            <button onclick="setTabCloud('topic4', 'azure')" id="tab-topic4-azure" class="cloud-tab-topic4 px-3 py-1 rounded-md text-slate-400 font-medium">Azure</button>
+                            <button onclick="setTabCloud('topic4', 'gcp')" id="tab-topic4-gcp" class="cloud-tab-topic4 px-3 py-1 rounded-md text-slate-400 font-medium">GCP</button>
+                        </div>
+                    </div>
+
+                    <div id="code-topic4-aws" class="code-container-topic4">
+                        <div class="code-block rounded-xl overflow-hidden">
+                            <pre id="code-snippet-4-aws" class="p-4 text-xs font-mono text-slate-200 overflow-x-auto"><code><span class="text-purple-400">variable</span> <span class="text-amber-300">"environment"</span> {
+  <span class="text-slate-400">type</span>        = <span class="text-purple-300">string</span>
+  <span class="text-slate-400">description</span> = <span class="text-emerald-300">"Target Deployment Tier"</span>
+
+  <span class="text-purple-400">validation</span> {
+    <span class="text-slate-400">condition</span>     = <span class="text-purple-300">contains</span>([<span class="text-emerald-300">"dev"</span>, <span class="text-emerald-300">"staging"</span>, <span class="text-emerald-300">"prod"</span>], <span class="text-purple-300">var</span>.<span class="text-slate-300">environment</span>)
+    <span class="text-slate-400">error_message</span> = <span class="text-emerald-300">"Environment must be dev, staging, or prod."</span>
+  }
+}
+
+<span class="text-purple-400">variable</span> <span class="text-amber-300">"db_password"</span> {
+  <span class="text-slate-400">type</span>      = <span class="text-purple-300">string</span>
+  <span class="text-slate-400">sensitive</span> = <span class="text-amber-500">true</span>
+}
+
+<span class="text-purple-400">output</span> <span class="text-sky-300">"rds_endpoint"</span> {
+  <span class="text-slate-400">value</span> = <span class="text-amber-300">aws_db_instance</span>.<span class="text-sky-300">main</span>.<span class="text-purple-300">endpoint</span>
+}</code></pre>
+                        </div>
+                    </div>
+
+                    <div id="code-topic4-azure" class="code-container-topic4 hidden">
+                        <div class="code-block rounded-xl overflow-hidden">
+                            <pre id="code-snippet-4-azure" class="p-4 text-xs font-mono text-slate-200 overflow-x-auto"><code><span class="text-purple-400">variable</span> <span class="text-amber-300">"admin_password"</span> {
+  <span class="text-slate-400">type</span>        = <span class="text-purple-300">string</span>
+  <span class="text-slate-400">sensitive</span>   = <span class="text-amber-500">true</span>
+  <span class="text-slate-400">description</span> = <span class="text-emerald-300">"Administrator password for Azure VM scale set."</span>
+}
+
+<span class="text-purple-400">output</span> <span class="text-sky-300">"vm_public_ip"</span> {
+  <span class="text-slate-400">value</span>     = <span class="text-amber-300">azurerm_public_ip</span>.<span class="text-sky-300">pip</span>.<span class="text-purple-300">ip_address</span>
+  <span class="text-slate-400">sensitive</span> = <span class="text-amber-500">false</span>
+}</code></pre>
+                        </div>
+                    </div>
+
+                    <div id="code-topic4-gcp" class="code-container-topic4 hidden">
+                        <div class="code-block rounded-xl overflow-hidden">
+                            <pre id="code-snippet-4-gcp" class="p-4 text-xs font-mono text-slate-200 overflow-x-auto"><code><span class="text-purple-400">variable</span> <span class="text-amber-300">"gcp_region"</span> {
+  <span class="text-slate-400">type</span>    = <span class="text-purple-300">string</span>
+  <span class="text-slate-400">default</span> = <span class="text-emerald-300">"us-central1"</span>
+}
+
+<span class="text-purple-400">output</span> <span class="text-sky-300">"gke_cluster_name"</span> {
+  <span class="text-slate-400">value</span> = <span class="text-amber-300">google_container_cluster</span>.<span class="text-sky-300">primary</span>.<span class="text-purple-300">name</span>
+}</code></pre>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Table -->
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+                    <h3 class="text-base font-bold text-slate-100 mb-4">Variable Precedence Order (Lowest to Highest)</h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs border-collapse">
+                            <thead>
+                                <tr class="bg-slate-950 text-slate-400 border-b border-slate-800 font-mono">
+                                    <th class="p-3">Precedence Level</th>
+                                    <th class="p-3">Source Mechanism</th>
+                                    <th class="p-3">Example Syntax</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-800/60 text-slate-300 font-mono">
+                                <tr class="hover:bg-slate-800/30">
+                                    <td class="p-3 text-slate-400">1 (Lowest)</td>
+                                    <td class="p-3 font-sans">Default block value</td>
+                                    <td class="p-3 text-purple-300">default = "us-east-1"</td>
+                                </tr>
+                                <tr class="hover:bg-slate-800/30">
+                                    <td class="p-3 text-slate-400">2</td>
+                                    <td class="p-3 font-sans">Environment Variables</td>
+                                    <td class="p-3 text-purple-300">export TF_VAR_region="us-west-2"</td>
+                                </tr>
+                                <tr class="hover:bg-slate-800/30">
+                                    <td class="p-3 text-slate-400">3</td>
+                                    <td class="p-3 font-sans">terraform.tfvars file</td>
+                                    <td class="p-3 text-purple-300">region = "eu-central-1"</td>
+                                </tr>
+                                <tr class="hover:bg-slate-800/30">
+                                    <td class="p-3 text-emerald-400">4 (Highest)</td>
+                                    <td class="p-3 font-sans">Command Line Flag</td>
+                                    <td class="p-3 text-purple-300">terraform apply -var="region=ap-south-1"</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Scenarios -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+                        <span class="bg-emerald-950 text-emerald-300 text-[10px] font-mono px-2.5 py-1 rounded-full uppercase">Use Case 4.1</span>
+                        <h4 class="text-base font-bold text-white mt-2 mb-2">Automated Custom Subnet Validation Rules</h4>
+                        <p class="text-xs text-slate-300 leading-relaxed mb-4">
+                            Enforcing IPv4 CIDR string syntax checking on variables using regex expressions prior to cloud API execution.
+                        </p>
+                    </div>
+                    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+                        <span class="bg-emerald-950 text-emerald-300 text-[10px] font-mono px-2.5 py-1 rounded-full uppercase">Use Case 4.2</span>
+                        <h4 class="text-base font-bold text-white mt-2 mb-2">CI/CD Output Parsing for Microservices</h4>
+                        <p class="text-xs text-slate-300 leading-relaxed mb-4">
+                            Exporting `terraform output -json` directly into Kubernetes Helm deployment manifests in Jenkins pipelines.
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TOPIC 5: CLI LIFECYCLE COMMANDS -->
+            <section id="topic5" class="topic-section space-y-8 hidden">
+                <div class="bg-gradient-to-br from-slate-900 via-slate-900 to-sky-950/40 border border-slate-800 rounded-2xl p-6 relative overflow-hidden">
+                    <div class="flex items-center gap-3 text-sky-400 text-xs font-mono font-semibold uppercase tracking-wider mb-2">
+                        <i class="fa-solid fa-terminal"></i> Topic 05 • Command Lifecycle Workflow & Execution Engine
+                    </div>
+                    <h2 class="text-2xl lg:text-3xl font-extrabold text-white tracking-tight">Terraform Core Lifecycle Commands</h2>
+                    <p class="text-slate-300 text-sm lg:text-base mt-2 max-w-4xl leading-relaxed">
+                        The core operational flow follows a strict 4-stage lifecycle: `init` (plugin download), `plan` (execution graph delta generation), `apply` (cloud state mutation), and `destroy` (deprovisioning).
+                    </p>
+                    <div class="mt-4 flex flex-wrap gap-2 text-xs">
+                        <a href="https://developer.hashicorp.com/terraform/cli/commands" target="_blank" rel="noopener noreferrer" class="bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-slate-700 px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition">
+                            <i class="fa-solid fa-book text-sky-400"></i> CLI Commands Manual <i class="fa-solid fa-arrow-up-right-from-square text-[10px] text-slate-500"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Visual CLI Flow -->
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+                    <h3 class="text-base font-bold text-slate-100 mb-4">Standard Operational Sequence</h3>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-center text-xs font-mono">
+                        <div class="p-3 bg-slate-950 border border-slate-800 rounded-xl">
+                            <span class="text-purple-400 font-bold block">1. terraform init</span>
+                            <span class="text-[11px] text-slate-500">Initialize working directory</span>
+                        </div>
+                        <div class="p-3 bg-slate-950 border border-slate-800 rounded-xl">
+                            <span class="text-sky-400 font-bold block">2. terraform plan</span>
+                            <span class="text-[11px] text-slate-500">Preview proposed state diff</span>
+                        </div>
+                        <div class="p-3 bg-slate-950 border border-slate-800 rounded-xl">
+                            <span class="text-emerald-400 font-bold block">3. terraform apply</span>
+                            <span class="text-[11px] text-slate-500">Execute infrastructure mutations</span>
+                        </div>
+                        <div class="p-3 bg-slate-950 border border-slate-800 rounded-xl">
+                            <span class="text-red-400 font-bold block">4. terraform destroy</span>
+                            <span class="text-[11px] text-slate-500">Teardown managed resources</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Table -->
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+                    <h3 class="text-base font-bold text-slate-100 mb-4">CLI Command Reference & Flags</h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs border-collapse">
+                            <thead>
+                                <tr class="bg-slate-950 text-slate-400 border-b border-slate-800 font-mono">
+                                    <th class="p-3">Command</th>
+                                    <th class="p-3">Primary Purpose</th>
+                                    <th class="p-3">Common Operational Flags</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-800/60 text-slate-300 font-mono">
+                                <tr class="hover:bg-slate-800/30">
+                                    <td class="p-3 text-purple-300">terraform init</td>
+                                    <td class="p-3 font-sans">Downloads provider plugins and sets up backend state modules.</td>
+                                    <td class="p-3 text-slate-400">-upgrade, -backend-config=path</td>
+                                </tr>
+                                <tr class="hover:bg-slate-800/30">
+                                    <td class="p-3 text-sky-300">terraform plan</td>
+                                    <td class="p-3 font-sans">Compares real-world state against code to generate execution diff.</td>
+                                    <td class="p-3 text-slate-400">-out=tfplan, -var-file=prod.tfvars</td>
+                                </tr>
+                                <tr class="hover:bg-slate-800/30">
+                                    <td class="p-3 text-emerald-300">terraform apply</td>
+                                    <td class="p-3 font-sans">Executes planned actions against Cloud Provider APIs.</td>
+                                    <td class="p-3 text-slate-400">-auto-approve, tfplan</td>
+                                </tr>
+                                <tr class="hover:bg-slate-800/30">
+                                    <td class="p-3 text-amber-300">terraform fmt</td>
+                                    <td class="p-3 font-sans">Rewrites configuration files to canonical format and style.</td>
+                                    <td class="p-3 text-slate-400">-check, -recursive</td>
+                                </tr>
+                                <tr class="hover:bg-slate-800/30">
+                                    <td class="p-3 text-indigo-300">terraform validate</td>
+                                    <td class="p-3 font-sans">Verifies whether configuration files are syntactically valid.</td>
+                                    <td class="p-3 text-slate-400">-json</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Scenarios -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+                        <span class="bg-sky-950 text-sky-300 text-[10px] font-mono px-2.5 py-1 rounded-full uppercase">Use Case 5.1</span>
+                        <h4 class="text-base font-bold text-white mt-2 mb-2">Automated CI/CD Plan Artifact Strategy</h4>
+                        <p class="text-xs text-slate-300 leading-relaxed mb-4">
+                            Generating deterministic `terraform plan -out=tfplan` artifacts in Pull Requests to guarantee exact execution matches during manual approval stages.
+                        </p>
+                    </div>
+                    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+                        <span class="bg-sky-950 text-sky-300 text-[10px] font-mono px-2.5 py-1 rounded-full uppercase">Use Case 5.2</span>
+                        <h4 class="text-base font-bold text-white mt-2 mb-2">Git Pre-Commit Hook Formatting Gates</h4>
+                        <p class="text-xs text-slate-300 leading-relaxed mb-4">
+                            Embedding `terraform fmt -check` and `terraform validate` into git pre-commit triggers to enforce zero linting regressions in master branches.
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- Interactive Terminal CLI Simulator Modal Drawer -->
+    <div id="terminal-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-slate-900 border border-slate-800 w-full max-w-4xl h-[600px] rounded-2xl shadow-2xl flex flex-col overflow-hidden terminal-glow">
+            <!-- Modal Header -->
+            <div class="bg-slate-950 px-6 py-4 border-b border-slate-800 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="flex gap-1.5">
+                        <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                        <div class="w-3 h-3 rounded-full bg-amber-500"></div>
+                        <div class="w-3 h-3 rounded-full bg-emerald-500"></div>
+                    </div>
+                    <span class="text-xs font-mono text-slate-400">interactive-lab ~ terraform-v1.6.0</span>
+                </div>
+                <button onclick="toggleTerminalModal()" class="text-slate-400 hover:text-white transition">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <!-- Terminal Body -->
+            <div class="flex-1 p-4 bg-slate-950 font-mono text-xs overflow-y-auto space-y-3" id="terminal-screen">
+                <div class="text-slate-400">
+                    Terraform CLI Execution Simulator [Module 1 Interactive Sandbox]<br>
+                    Type <span class="text-purple-400 font-bold">help</span> to view available lifecycle commands.
+                </div>
+                <div class="p-3 bg-purple-950/30 border border-purple-800/40 rounded-lg text-purple-300 text-[11px]">
+                    Current Working Directory State: <span id="lab-state-status" class="text-amber-400 font-bold">Uninitialized</span>
+                </div>
+            </div>
+
+            <!-- Command Interactive Controls -->
+            <div class="bg-slate-900 p-4 border-t border-slate-800 flex flex-col gap-3">
+                <div class="flex flex-wrap gap-2 text-xs">
+                    <span class="text-slate-400 text-[11px] font-mono self-center">Quick Run:</span>
+                    <button onclick="runSimCommand('terraform init')" class="px-2.5 py-1 bg-slate-800 hover:bg-purple-600/30 text-purple-300 border border-purple-500/30 rounded-md font-mono transition">terraform init</button>
+                    <button onclick="runSimCommand('terraform fmt')" class="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 rounded-md font-mono transition">terraform fmt</button>
+                    <button onclick="runSimCommand('terraform validate')" class="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 rounded-md font-mono transition">terraform validate</button>
+                    <button onclick="runSimCommand('terraform plan')" class="px-2.5 py-1 bg-slate-800 hover:bg-sky-600/30 text-sky-300 border border-sky-500/30 rounded-md font-mono transition">terraform plan</button>
+                    <button onclick="runSimCommand('terraform apply')" class="px-2.5 py-1 bg-slate-800 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-500/30 rounded-md font-mono transition">terraform apply</button>
+                    <button onclick="runSimCommand('terraform destroy')" class="px-2.5 py-1 bg-slate-800 hover:bg-red-600/30 text-red-300 border border-red-500/30 rounded-md font-mono transition">terraform destroy</button>
+                </div>
+
+                <!-- Input Form -->
+                <form onsubmit="handleTerminalSubmit(event)" class="flex gap-2">
+                    <span class="text-emerald-400 font-mono self-center">$</span>
+                    <input type="text" id="terminal-input" placeholder="Enter terraform command..." class="flex-1 bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 font-mono text-xs text-slate-200 focus:outline-none focus:border-purple-500">
+                    <button type="submit" class="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white font-semibold text-xs rounded-lg transition">Execute</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Application JavaScript Engine -->
+    <script>
+        // State variables
+        let currentTopic = 'topic1';
+        let labInitialized = false;
+        let labPlanned = false;
+        let labApplied = false;
+
+        // Topic Navigation Logic
+        function switchTopic(topicId) {
+            // Update active state in navigation
+            document.querySelectorAll('.topic-section').forEach(sec => sec.classList.add('hidden'));
+            document.getElementById(topicId).classList.remove('hidden');
+
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('bg-purple-600/15', 'text-purple-300', 'border', 'border-purple-500/30');
+                btn.classList.add('text-slate-400');
+            });
+
+            const activeBtn = document.getElementById(`nav-${topicId}`);
+            if (activeBtn) {
+                activeBtn.classList.remove('text-slate-400');
+                activeBtn.classList.add('bg-purple-600/15', 'text-purple-300', 'border', 'border-purple-500/30');
+            }
+
+            currentTopic = topicId;
+            document.getElementById('content-container').scrollTop = 0;
+        }
+
+        // Global Multi-Cloud Preference Filter
+        function setGlobalCloud(cloud) {
+            // Update Top Bar active state
+            document.querySelectorAll('.cloud-global-btn').forEach(btn => {
+                btn.classList.remove('bg-amber-500/10', 'text-amber-400', 'border', 'border-amber-500/30',
+                                   'bg-sky-500/10', 'text-sky-400', 'border', 'border-sky-500/30',
+                                   'bg-red-500/10', 'text-red-400', 'border', 'border-red-500/30');
+                btn.classList.add('text-slate-400');
+            });
+
+            const activeGlobalBtn = document.getElementById(`global-btn-${cloud}`);
+            if (cloud === 'aws') {
+                activeGlobalBtn.classList.add('bg-amber-500/10', 'text-amber-400', 'border', 'border-amber-500/30');
+            } else if (cloud === 'azure') {
+                activeGlobalBtn.classList.add('bg-sky-500/10', 'text-sky-400', 'border', 'border-sky-500/30');
+            } else if (cloud === 'gcp') {
+                activeGlobalBtn.classList.add('bg-red-500/10', 'text-red-400', 'border', 'border-red-500/30');
+            }
+
+            // Sync active view for all sub-topics
+            ['topic1', 'topic2', 'topic3', 'topic4'].forEach(topic => {
+                setTabCloud(topic, cloud);
+            });
+        }
+
+        // Individual Sub-Tab Switcher
+        function setTabCloud(topicId, cloud) {
+            const containers = document.querySelectorAll(`.code-container-${topicId}`);
+            containers.forEach(c => c.classList.add('hidden'));
+
+            const targetCode = document.getElementById(`code-${topicId}-${cloud}`);
+            if (targetCode) targetCode.classList.remove('hidden');
+
+            const tabs = document.querySelectorAll(`.cloud-tab-${topicId}`);
+            tabs.forEach(t => {
+                t.classList.remove('text-amber-400', 'bg-amber-500/10', 'text-sky-400', 'bg-sky-500/10', 'text-red-400', 'bg-red-500/10');
+                t.classList.add('text-slate-400');
+            });
+
+            const activeTab = document.getElementById(`tab-${topicId}-${cloud}`);
+            if (activeTab) {
+                activeTab.classList.remove('text-slate-400');
+                if (cloud === 'aws') activeTab.classList.add('text-amber-400', 'bg-amber-500/10');
+                if (cloud === 'azure') activeTab.classList.add('text-sky-400', 'bg-sky-500/10');
+                if (cloud === 'gcp') activeTab.classList.add('text-red-400', 'bg-red-500/10');
+            }
+        }
+
+        // Search Filter for Property Reference Tables
+        function filterTable(tableId, query) {
+            const filter = query.toLowerCase();
+            const rows = document.querySelectorAll(`#${tableId} tbody tr`);
+
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                if (text.includes(filter)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+
+        // Copy Code to Clipboard
+        function copyCode(elementId) {
+            const text = document.getElementById(elementId).innerText;
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textarea);
+
+            const toast = document.createElement('div');
+            toast.className = 'fixed bottom-6 right-6 bg-purple-600 text-white px-4 py-2 rounded-lg shadow-xl text-xs font-mono z-50';
+            toast.innerText = 'Code copied to clipboard!';
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 2000);
+        }
+
+        // Terminal Modal Toggle
+        function toggleTerminalModal() {
+            const modal = document.getElementById('terminal-modal');
+            modal.classList.toggle('hidden');
+        }
+
+        // CLI Simulator Command Logic
+        function handleTerminalSubmit(e) {
+            e.preventDefault();
+            const input = document.getElementById('terminal-input');
+            const cmd = input.value.trim();
+            if (cmd) {
+                runSimCommand(cmd);
+                input.value = '';
+            }
+        }
+
+        function runSimCommand(cmd) {
+            const screen = document.getElementById('terminal-screen');
+            const statusLabel = document.getElementById('lab-state-status');
+
+            // User Command Prompt Printing
+            const cmdLine = document.createElement('div');
+            cmdLine.className = 'text-slate-200 mt-3 font-bold';
+            cmdLine.innerHTML = `<span class="text-emerald-400">$</span> ${cmd}`;
+            screen.appendChild(cmdLine);
+
+            const output = document.createElement('div');
+            output.className = 'text-slate-300 leading-relaxed font-mono';
+
+            const trimmed = cmd.toLowerCase().trim();
+
+            if (trimmed === 'help') {
+                output.innerHTML = `Available sandbox commands:<br>
+                - <span class="text-purple-400">terraform init</span> : Downloads provider plugins and initializes directory.<br>
+                - <span class="text-purple-400">terraform fmt</span> : Validates canonical code formatting.<br>
+                - <span class="text-purple-400">terraform validate</span> : Checks resource HCL syntax.<br>
+                - <span class="text-purple-400">terraform plan</span> : Compares code to state and outputs spec diff.<br>
+                - <span class="text-purple-400">terraform apply</span> : Applies changes to simulated cloud infrastructure.<br>
+                - <span class="text-purple-400">terraform destroy</span> : Destroys managed cloud infrastructure.`;
+            } else if (trimmed === 'terraform init') {
+                labInitialized = true;
+                statusLabel.innerText = "Initialized (.terraform plugin downloaded)";
+                statusLabel.className = "text-indigo-400 font-bold";
+                output.innerHTML = `<span class="text-emerald-400">Initializing the backend...</span><br>
+Initializing provider plugins...<br>
+- Finding hashicorp/aws versions matching "~> 5.30.0"...<br>
+- Installing hashicorp/aws v5.30.0...<br>
+- Installed hashicorp/aws v5.30.0 (signed by HashiCorp)<br><br>
+<span class="text-emerald-400">Terraform has been successfully initialized!</span>`;
+            } else if (trimmed === 'terraform fmt') {
+                output.innerHTML = `main.tf<br>providers.tf<br><span class="text-emerald-400">Formatted 2 files canonically.</span>`;
+            } else if (trimmed === 'terraform validate') {
+                output.innerHTML = `<span class="text-emerald-400">Success! The configuration is syntactically valid.</span>`;
+            } else if (trimmed === 'terraform plan') {
+                if (!labInitialized) {
+                    output.innerHTML = `<span class="text-red-400">Error: Working directory not initialized. Run "terraform init" first.</span>`;
+                } else {
+                    labPlanned = true;
+                    output.innerHTML = `Terraform used the selected providers to generate the following execution plan:<br><br>
+  <span class="text-emerald-400">+ resource "aws_s3_bucket" "finance_vault" {</span><br>
+  <span class="text-emerald-400">+ arn          = (known after apply)</span><br>
+  <span class="text-emerald-400">+ bucket       = "fin-data-vault-091"</span><br>
+  <span class="text-emerald-400">+ id           = (known after apply)</span><br>
+  }<br><br>
+<span class="text-bold text-white">Plan:</span> 1 to add, 0 to change, 0 to destroy.`;
+                }
+            } else if (trimmed === 'terraform apply') {
+                if (!labInitialized) {
+                    output.innerHTML = `<span class="text-red-400">Error: Working directory not initialized. Run "terraform init" first.</span>`;
+                } else if (!labPlanned) {
+                    output.innerHTML = `<span class="text-amber-400">Warning: Running apply without explicit plan artifact...</span><br>
+Plan generated. 1 to add.<br>
+<span class="text-emerald-400">aws_s3_bucket.finance_vault: Creating...</span><br>
+aws_s3_bucket.finance_vault: Creation complete after 3s [id=fin-data-vault-091]<br><br>
+<span class="text-emerald-400">Apply complete! Resources: 1 added, 0 changed, 0 destroyed.</span>`;
+                    labApplied = true;
+                    statusLabel.innerText = "Managed Resources Deployed (1 Active)";
+                    statusLabel.className = "text-emerald-400 font-bold";
+                } else {
+                    output.innerHTML = `<span class="text-emerald-400">aws_s3_bucket.finance_vault: Creating...</span><br>
+aws_s3_bucket.finance_vault: Creation complete after 3s [id=fin-data-vault-091]<br><br>
+<span class="text-emerald-400">Apply complete! Resources: 1 added, 0 changed, 0 destroyed.</span>`;
+                    labApplied = true;
+                    statusLabel.innerText = "Managed Resources Deployed (1 Active)";
+                    statusLabel.className = "text-emerald-400 font-bold";
+                }
+            } else if (trimmed === 'terraform destroy') {
+                if (!labApplied) {
+                    output.innerHTML = `<span class="text-amber-400">No resources currently exist in state to destroy.</span>`;
+                } else {
+                    labApplied = false;
+                    labPlanned = false;
+                    output.innerHTML = `<span class="text-red-400">aws_s3_bucket.finance_vault: Destroying... [id=fin-data-vault-091]</span><br>
+aws_s3_bucket.finance_vault: Destruction complete after 2s<br><br>
+<span class="text-emerald-400">Destroy complete! Resources: 1 destroyed.</span>`;
+                    statusLabel.innerText = "Initialized (0 Resources Active)";
+                    statusLabel.className = "text-indigo-400 font-bold";
+                }
+            } else {
+                output.innerHTML = `<span class="text-red-400">Command not recognized: ${cmd}</span>. Type 'help' for available lifecycle commands.`;
+            }
+
+            screen.appendChild(output);
+            screen.scrollTop = screen.scrollHeight;
+        }
+    </script>
+</body>
+</html>

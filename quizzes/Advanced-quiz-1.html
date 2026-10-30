@@ -1,0 +1,1692 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Terraform Advanced Certification Quiz</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#f0f4ff',
+              100: '#e0e8ff',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca',
+              800: '#3730a3',
+              900: '#312e81',
+            },
+            tfpurple: '#844fba'
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+            mono: ['JetBrains Mono', 'Fira Code', 'Monaco', 'Consolas', 'monospace']
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@300;400;500;600;700&display=swap');
+    body { font-family: 'Inter', sans-serif; }
+    pre, code { font-family: 'Fira Code', monospace; }
+    .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(156, 163, 175, 0.4); border-radius: 9999px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(156, 163, 175, 0.6); }
+  </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col transition-colors duration-200 dark:bg-slate-950 dark:text-slate-100">
+
+  <!-- TOP HEADER -->
+  <header class="sticky top-0 z-40 bg-slate-900/90 dark:bg-slate-950/90 backdrop-blur border-b border-slate-800 px-4 py-3 shadow-lg">
+    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
+      <!-- Title & Badge -->
+      <div class="flex items-center space-x-3">
+        <div class="p-2 bg-purple-600/20 text-purple-400 rounded-lg border border-purple-500/30">
+          <i class="fa-solid fa-cubes text-xl"></i>
+        </div>
+        <div>
+          <h1 class="text-lg font-bold tracking-tight text-white flex items-center gap-2">
+            Terraform Advanced Certification Quiz
+            <span class="text-xs px-2.5 py-0.5 rounded-full font-extrabold uppercase bg-gradient-to-r from-purple-500 to-indigo-600 text-white shadow-sm tracking-wider">
+              ADVANCED
+            </span>
+          </h1>
+          <p class="text-xs text-slate-400">Master State Refactoring, Plugin Protocol, Architecture & Enterprise Security</p>
+        </div>
+      </div>
+
+      <!-- Controls & Mode Selector -->
+      <div class="flex items-center flex-wrap gap-3">
+        <!-- Practice vs Exam Mode Toggle -->
+        <div class="bg-slate-800 p-1 rounded-lg flex items-center border border-slate-700 text-xs">
+          <button id="modePracticeBtn" onclick="setMode('practice')" class="px-3 py-1.5 rounded-md font-medium transition-all flex items-center gap-1.5 bg-indigo-600 text-white shadow-sm">
+            <i class="fa-solid fa-graduation-cap"></i> Practice Mode
+          </button>
+          <button id="modeExamBtn" onclick="setMode('exam')" class="px-3 py-1.5 rounded-md font-medium transition-all flex items-center gap-1.5 text-slate-400 hover:text-white">
+            <i class="fa-solid fa-stopwatch"></i> Exam Mode (45m)
+          </button>
+        </div>
+
+        <!-- Timer Display (Shown in Exam Mode) -->
+        <div id="examTimer" class="hidden items-center gap-2 px-3 py-1.5 bg-rose-950/60 border border-rose-500/40 text-rose-300 rounded-lg font-mono font-bold text-sm">
+          <i class="fa-regular fa-clock animate-pulse"></i>
+          <span id="timerCountdown">45:00</span>
+        </div>
+
+        <!-- Filter Toggle -->
+        <button id="incorrectFilterBtn" onclick="toggleIncorrectFilter()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 rounded-lg text-xs font-medium flex items-center gap-2 transition">
+          <i class="fa-solid fa-filter text-indigo-400"></i>
+          <span id="filterBtnLabel">Show Only Incorrect</span>
+        </button>
+
+        <!-- Theme Toggle -->
+        <button onclick="toggleTheme()" class="p-2 bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 rounded-lg text-xs flex items-center justify-center transition">
+          <i id="themeIcon" class="fa-solid fa-sun text-amber-400 text-sm"></i>
+        </button>
+
+        <!-- Reset Part -->
+        <button onclick="resetCurrentPart()" class="px-3 py-1.5 bg-rose-900/30 hover:bg-rose-900/50 text-rose-300 border border-rose-800/50 rounded-lg text-xs font-medium flex items-center gap-1.5 transition">
+          <i class="fa-solid fa-rotate-left"></i> Reset Part
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- TAB NAVIGATION -->
+  <div class="bg-slate-900/50 border-b border-slate-800 px-4">
+    <div class="max-w-7xl mx-auto flex space-x-2 pt-2">
+      <button id="tab1Btn" onclick="switchTab(1)" class="px-4 py-2.5 font-semibold text-sm rounded-t-lg border-b-2 transition flex items-center gap-2 border-indigo-500 text-indigo-400 bg-slate-800/60">
+        <i class="fa-solid fa-layer-group"></i> Part 1: Core Architecture & Refactoring (Q1-25)
+      </button>
+      <button id="tab2Btn" onclick="switchTab(2)" class="px-4 py-2.5 font-semibold text-sm rounded-t-lg border-b-2 transition flex items-center gap-2 border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-800/30">
+        <i class="fa-solid fa-server"></i> Part 2: Advanced State, Plugins & Enterprise (Q26-50)
+      </button>
+    </div>
+  </div>
+
+  <!-- LIVE PROGRESS & STATS BAR -->
+  <div class="bg-slate-800/40 border-b border-slate-800/80 px-4 py-2.5 text-xs">
+    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
+      <div class="flex items-center space-x-6">
+        <div class="flex items-center space-x-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block"></span>
+          <span class="text-slate-400">Correct:</span>
+          <span id="correctCount" class="font-bold text-emerald-400">0</span>
+        </div>
+        <div class="flex items-center space-x-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-rose-500 inline-block"></span>
+          <span class="text-slate-400">Incorrect:</span>
+          <span id="incorrectCount" class="font-bold text-rose-400">0</span>
+        </div>
+        <div class="flex items-center space-x-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-slate-500 inline-block"></span>
+          <span class="text-slate-400">Unanswered:</span>
+          <span id="unansweredCount" class="font-bold text-slate-300">25</span>
+        </div>
+      </div>
+
+      <div class="flex items-center space-x-3 w-full sm:w-auto sm:min-w-[240px]">
+        <span class="text-slate-400 whitespace-nowrap">Part Progress:</span>
+        <div class="w-full bg-slate-700/60 h-2.5 rounded-full overflow-hidden border border-slate-600/40">
+          <div id="progressBar" class="bg-indigo-500 h-full transition-all duration-300" style="width: 0%"></div>
+        </div>
+        <span id="progressText" class="font-mono text-slate-300 font-medium">0%</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN CONTAINER -->
+  <main class="max-w-7xl mx-auto p-4 md:p-6 flex-1 w-full grid grid-cols-1 lg:grid-cols-4 gap-6">
+    
+    <!-- LEFT SIDEBAR: JUMP GRID -->
+    <aside class="lg:col-span-1 space-y-4">
+      <div class="bg-slate-800/60 rounded-xl p-4 border border-slate-700/60 shadow-md">
+        <div class="flex items-center justify-between mb-3">
+          <h2 class="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+            <i class="fa-solid fa-border-all"></i> Question Jump Grid
+          </h2>
+          <span id="gridPartLabel" class="text-xs text-indigo-400 font-semibold">Part 1</span>
+        </div>
+
+        <div id="jumpGrid" class="grid grid-cols-5 gap-2">
+          <!-- Dynamically Generated 25 Grid Buttons -->
+        </div>
+
+        <div class="mt-4 pt-3 border-t border-slate-700/50 text-[11px] text-slate-400 space-y-1.5">
+          <div class="flex items-center gap-2">
+            <span class="w-3 h-3 rounded bg-emerald-600/30 border border-emerald-500 inline-block"></span> Correct
+            <span class="w-3 h-3 rounded bg-rose-600/30 border border-rose-500 inline-block ml-2"></span> Incorrect
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="w-3 h-3 rounded bg-slate-700 border border-slate-600 inline-block"></span> Unanswered
+            <span class="w-3 h-3 rounded bg-indigo-600 border border-indigo-400 inline-block ml-2"></span> Current
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Box -->
+      <div class="bg-slate-800/40 rounded-xl p-4 border border-slate-700/40 text-center">
+        <button onclick="openResultsModal()" class="w-full py-2.5 px-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-semibold rounded-lg shadow-md transition flex items-center justify-center gap-2 text-sm">
+          <i class="fa-solid fa-chart-pie"></i> Submit & View Score
+        </button>
+      </div>
+    </aside>
+
+    <!-- RIGHT SECTION: QUESTION CARD & EXPLANATION -->
+    <section class="lg:col-span-3 space-y-6">
+      
+      <!-- QUESTION CONTAINER -->
+      <div id="questionContainer" class="bg-slate-800/80 rounded-xl border border-slate-700 p-6 shadow-xl relative">
+        <!-- Question Header -->
+        <div class="flex items-start justify-between gap-4 border-b border-slate-700/60 pb-4 mb-4">
+          <div>
+            <div class="flex items-center gap-2 mb-1">
+              <span id="qNumberBadge" class="text-xs font-mono font-bold px-2.5 py-1 bg-indigo-950 text-indigo-300 border border-indigo-700/60 rounded-md">
+                Question 01 / 25
+              </span>
+              <span id="qDomainBadge" class="text-xs px-2.5 py-1 bg-slate-700 text-slate-300 rounded-md font-medium">
+                Core State Architecture
+              </span>
+            </div>
+            <h2 id="qTitle" class="text-lg font-semibold text-slate-100 mt-2 leading-relaxed">
+              Loading Question...
+            </h2>
+          </div>
+        </div>
+
+        <!-- Question Code / Context Snippet -->
+        <div id="qCodeBlock" class="mb-5 hidden">
+          <pre class="bg-slate-950 p-4 rounded-lg border border-slate-800 text-xs md:text-sm text-slate-200 overflow-x-auto custom-scrollbar"><code id="qCode"></code></pre>
+        </div>
+
+        <!-- Options List -->
+        <div id="optionsList" class="space-y-3">
+          <!-- Rendered dynamically -->
+        </div>
+
+        <!-- Bottom Navigation Controls -->
+        <div class="mt-8 pt-4 border-t border-slate-700/60 flex items-center justify-between">
+          <button id="prevBtn" onclick="navigateQuestion(-1)" class="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-slate-200 rounded-lg text-sm font-medium transition flex items-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed">
+            <i class="fa-solid fa-arrow-left"></i> Previous
+          </button>
+          <span class="text-xs text-slate-400 hidden sm:inline" id="keyboardHint">Use Left/Right arrows or Jump Grid to navigate</span>
+          <button id="nextBtn" onclick="navigateQuestion(1)" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-sm font-medium transition flex items-center gap-2">
+            Next <i class="fa-solid fa-arrow-right"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- IN-DEPTH EXPLANATION BOX (Revealed upon selection in Practice Mode or after Submit) -->
+      <div id="explanationCard" class="hidden bg-slate-900/90 rounded-xl border border-indigo-500/30 p-6 shadow-xl space-y-4">
+        <div class="flex items-center gap-2 text-indigo-400 font-bold border-b border-slate-800 pb-3">
+          <i class="fa-solid fa-lightbulb text-amber-400 text-lg"></i>
+          <span class="text-base">Comprehensive Explanation & Architecture Breakdown</span>
+        </div>
+
+        <!-- Key Concept -->
+        <div class="space-y-1">
+          <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400">Core Underlying Concept</h4>
+          <p id="expConcept" class="text-sm text-slate-200 leading-relaxed"></p>
+        </div>
+
+        <!-- Distractor Analysis -->
+        <div class="space-y-1">
+          <h4 class="text-xs font-bold uppercase tracking-wider text-rose-400">Why Distractors Are Incorrect</h4>
+          <p id="expDistractor" class="text-sm text-slate-300 leading-relaxed"></p>
+        </div>
+
+        <!-- Production Pitfalls -->
+        <div class="space-y-1 bg-amber-950/20 border border-amber-500/20 p-3.5 rounded-lg">
+          <h4 class="text-xs font-bold uppercase tracking-wider text-amber-400 flex items-center gap-1.5">
+            <i class="fa-solid fa-triangle-exclamation"></i> Real-World Pitfalls & Production Context
+          </h4>
+          <p id="expPitfall" class="text-sm text-amber-200/90 leading-relaxed"></p>
+        </div>
+
+        <!-- Docs Reference Link -->
+        <div class="pt-2 border-t border-slate-800 flex items-center justify-between">
+          <span class="text-xs text-slate-400">Official HashiCorp Reference:</span>
+          <a id="expDocLink" href="#" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 text-xs text-indigo-400 hover:text-indigo-300 underline font-medium">
+            <span>Documentation Page</span>
+            <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+          </a>
+        </div>
+      </div>
+
+    </section>
+  </main>
+
+  <!-- RESULTS MODAL -->
+  <div id="resultsModal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md hidden flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-2xl w-full p-6 shadow-2xl space-y-6 max-h-[90vh] overflow-y-auto custom-scrollbar">
+      <div class="text-center space-y-2 border-b border-slate-800 pb-4">
+        <div id="modalStatusBadge" class="inline-block px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider mb-1 bg-emerald-950 text-emerald-400 border border-emerald-600/40">
+          PASSED (Threshold: 75%)
+        </div>
+        <h2 class="text-2xl font-extrabold text-white">Part Assessment Summary</h2>
+        <p id="modalPartSubtitle" class="text-xs text-slate-400">Part 1: Core Architecture & Refactoring</p>
+      </div>
+
+      <!-- Score Gauge Circle & Counts -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
+        <div class="bg-slate-800/60 p-4 rounded-xl border border-slate-700/60 flex flex-col items-center justify-center">
+          <span class="text-3xl font-extrabold font-mono text-indigo-400" id="modalScorePct">0%</span>
+          <span class="text-xs text-slate-400 mt-1 uppercase tracking-wider font-semibold">Overall Score</span>
+        </div>
+        <div class="bg-slate-800/60 p-4 rounded-xl border border-slate-700/60 flex flex-col items-center justify-center">
+          <span class="text-3xl font-extrabold font-mono text-emerald-400" id="modalCorrectNum">0 / 25</span>
+          <span class="text-xs text-slate-400 mt-1 uppercase tracking-wider font-semibold">Correct Answers</span>
+        </div>
+        <div class="bg-slate-800/60 p-4 rounded-xl border border-slate-700/60 flex flex-col items-center justify-center">
+          <span class="text-3xl font-extrabold font-mono text-rose-400" id="modalIncorrectNum">0</span>
+          <span class="text-xs text-slate-400 mt-1 uppercase tracking-wider font-semibold">Incorrect Answers</span>
+        </div>
+      </div>
+
+      <!-- Domain Performance Breakdown -->
+      <div class="space-y-3">
+        <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400">Domain Performance Breakdown</h3>
+        <div id="domainBreakdown" class="space-y-2 text-xs">
+          <!-- Rendered dynamically -->
+        </div>
+      </div>
+
+      <!-- Modal Footer Buttons -->
+      <div class="flex flex-col sm:flex-row items-center justify-end gap-3 pt-4 border-t border-slate-800">
+        <button id="reviewIncorrectBtn" onclick="reviewIncorrectFromModal()" class="w-full sm:w-auto px-4 py-2.5 bg-rose-600/20 hover:bg-rose-600/30 text-rose-300 border border-rose-500/40 rounded-lg text-xs font-bold transition flex items-center justify-center gap-2">
+          <i class="fa-solid fa-filter"></i> Review Missed Questions
+        </button>
+        <button onclick="closeResultsModal()" class="w-full sm:w-auto px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-bold transition">
+          Close Summary
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- JASVASCRIPT QUIZ ENGINE & QUESTION DATA -->
+  <script>
+    // COMPLETE 50 QUESTIONS DATA STRUCTURE
+    const quizData = [
+      // PART 1: CORE ARCHITECTURE & REFACTORING (Q1 - Q25)
+      {
+        id: 1,
+        part: 1,
+        domain: "Declarative Refactoring",
+        title: "You are refactoring a module to move an existing `aws_s3_bucket.logs` resource into a child module `module.logging`. Which approach cleanly updates state without requiring CLI commands or imperative state manipulation during apply?",
+        code: `# Refactored code structure:
+module "logging" {
+  source = "./modules/logging"
+}
+
+# Which moved block definition is syntactically and logically correct?`,
+        options: [
+          "moved {\n  from = aws_s3_bucket.logs\n  to   = module.logging.aws_s3_bucket.logs\n}",
+          "state_rename {\n  source = aws_s3_bucket.logs\n  target = module.logging.aws_s3_bucket.logs\n}",
+          "resource \"moved\" \"logs\" {\n  from = aws_s3_bucket.logs\n  to   = module.logging.aws_s3_bucket.logs\n}",
+          "import {\n  to = module.logging.aws_s3_bucket.logs\n  id = aws_s3_bucket.logs.id\n}"
+        ],
+        correct: 0, // A
+        concept: "Terraform 1.1+ introduced top-level `moved` blocks to enable declarative state refactoring directly in configuration files, ensuring team members and CI/CD pipelines automatically migrate state during `terraform plan/apply` without running imperative CLI commands like `terraform state mv`.",
+        distractor: "Option B uses non-existent syntax `state_rename`. Option C incorrectly structures `moved` as a resource block rather than a top-level block. Option D uses `import`, which is designed for adopting existing cloud infrastructure into state, not moving existing state addresses across modules.",
+        pitfall: "Removing a `moved` block immediately after a single apply risks breaking state for teammates or feature branches that haven't merged/applied yet. Keep `moved` blocks in configuration across several release cycles.",
+        docLink: "https://developer.hashicorp.com/terraform/language/modules/develop/refactoring"
+      },
+      {
+        id: 2,
+        part: 1,
+        domain: "Declarative Import",
+        title: "When using dynamic declarative `import` blocks with a `for_each` meta-argument in Terraform 1.5+, what is a strict validation requirement regarding the `id` and `to` fields?",
+        code: "import {\n  for_each = var.subnets\n  to       = aws_subnet.managed[each.key]\n  id       = each.value.subnet_id\n}",
+        options: [
+          "The `to` address must be evaluated statically, but `id` can depend on dynamic values known only after plan execution.",
+          "The `id` expression can reference resource attributes from other unapplied resources, but `to` cannot.",
+          "Both `to` and `id` must be known statically at plan time; `id` cannot depend on unapplied resource attributes.",
+          "The `for_each` in an import block can only iterate over integer counts, not map keys or sets."
+        ],
+        correct: 2, // C
+        concept: "In declarative `import` blocks, Terraform must determine both the target resource address (`to`) and the exact cloud resource identifier (`id`) during the plan phase so it can fetch resource states from cloud APIs.",
+        distractor: "Option A & B are incorrect because `id` cannot depend on dynamic computed outputs of resources created in the same apply plan. Option D is false; `for_each` accepts maps and sets of strings just like resource `for_each`.",
+        pitfall: "Attempting to reference a dynamic resource attribute (e.g., `id = aws_vpc.main.id`) inside an `import` block before `aws_vpc.main` exists will result in a plan-time error stating that the import ID cannot be determined.",
+        docLink: "https://developer.hashicorp.com/terraform/language/import"
+      },
+      {
+        id: 3,
+        part: 1,
+        domain: "Custom Validation & Lifecycle",
+        title: "Which conditional block type should be used when you want to enforce a check on a resource's *computed output attributes* after the resource has been created or read?",
+        code: "resource \"aws_instance\" \"app\" {\n  ami           = var.ami_id\n  instance_type = \"t3.micro\"\n\n  # Which block guarantees validation of computed attributes after provisioning?\n}",
+        options: [
+          "A `validation` block inside `variable \"ami_id\"`",
+          "A `precondition` block inside the resource's `lifecycle` block",
+          "A `postcondition` block inside the resource's `lifecycle` block",
+          "A `check` block at the root module level with a `custom_error` parameter"
+        ],
+        correct: 2, // C
+        concept: "`postcondition` blocks evaluate assertions *after* Terraform reads or provisions a resource, granting access to both input parameters and post-apply computed attributes (like assigned public IPs, dynamic status codes, or generated ARNs).",
+        distractor: "Option A validates variable inputs before plan evaluation starts, not resource outputs. Option B (`precondition`) evaluates *before* resource creation/refresh, so it cannot evaluate unknown post-creation computed attributes. Option D (`check` blocks) perform continuous assertions but do not halt resource creation on failure.",
+        pitfall: "Using `precondition` for unknown computed attributes causes plan failures because the attribute value is `(known after apply)`. Use `postcondition` when asserting on provider-assigned outputs.",
+        docLink: "https://developer.hashicorp.com/terraform/language/expressions/custom-conditions#postconditions"
+      },
+      {
+        id: 4,
+        part: 1,
+        domain: "Sensitive Data Lifecycle",
+        title: "How does Terraform behave when you wrap a sensitive resource attribute with `nonsensitive()` in an output or local variable?",
+        code: "output \"database_password\" {\n  value     = nonsensitive(aws_db_instance.db.password)\n  sensitive = false\n}",
+        options: [
+          "It permanently redacts the password from the raw `.tfstate` file on disk.",
+          "It strips the sensitive mark in CLI logs/outputs, but the value remains in plain text in the `.tfstate` file.",
+          "It encrypts the output value in state using the backend's native symmetric key.",
+          "It causes Terraform to raise a plan error if the underlying provider marked the attribute as sensitive."
+        ],
+        correct: 1, // B
+        concept: "`nonsensitive()` removes the UI/CLI display mask enforced by Terraform's type system. It has ZERO impact on state storage security—Terraform state files store all values (sensitive or not) in unencrypted plain text unless backend encryption at rest is configured.",
+        distractor: "Option A is false; `nonsensitive()` does not erase data from state. Option C is false; state encryption is handled at the state backend level, not by HCL type functions. Option D is wrong because `nonsensitive()` is designed specifically to override provider sensitive flags for UI rendering.",
+        pitfall: "Developers often mistakenly assume `sensitive = true` or `nonsensitive()` secures state files. Anyone with read access to `terraform.tfstate` or remote state backends can read plain text secrets.",
+        docLink: "https://developer.hashicorp.com/terraform/language/functions/nonsensitive"
+      },
+      {
+        id: 5,
+        part: 1,
+        domain: "Complex Type Constraints",
+        title: "Given a variable with object optional attributes and defaults, what happens if a caller passes an explicit `null` value for an optional field?",
+        code: "variable \"config\" {\n  type = object({\n    enabled = bool\n    port    = optional(number, 8080)\n  })\n}",
+        options: [
+          "Terraform automatically replaces explicit `null` with the default value `8080`.",
+          "Terraform sets `port` to `null`, overriding the default value of `8080`.",
+          "Terraform throws a type mismatch validation error during plan.",
+          "Terraform sets `port` to `0` as a fallback for numbers."
+        ],
+        correct: 0, // A
+        concept: "In Terraform optional object attributes (`optional(type, default)`), passing an explicit `null` value or omitting the key entirely causes Terraform to substitute the declared default value.",
+        distractor: "Option B describes older experimental behavior or custom HCL logic; standard optional default evaluation treats `null` as 'value unassigned, apply default'. Option C & D are incorrect HCL behaviors.",
+        pitfall: "If you specifically need an attribute to be explicitly set to `null` (e.g., to omit an API payload field in a provider), do not specify a default value in `optional()`.",
+        docLink: "https://developer.hashicorp.com/terraform/language/expressions/type-constraints#optional-attribute-defaults"
+      },
+      {
+        id: 6,
+        part: 1,
+        domain: "Module Composition & Providers",
+        title: "How must provider aliases be explicitly passed down from a root configuration to a child module?",
+        code: "# Root configuration provider definition:\nprovider \"aws\" {\n  alias  = \"west\"\n  region = \"us-west-2\"\n}\n\n# How is this provider passed to module \"network\"?",
+        options: [
+          "module \"network\" {\n  source = \"./module\"\n  providers = {\n    aws.west = aws.west\n  }\n}",
+          "module \"network\" {\n  source    = \"./module\"\n  provider  = aws.west\n}",
+          "module \"network\" {\n  source = \"./module\"\n  providers = {\n    aws = aws.west\n  }\n}",
+          "module \"network\" {\n  source        = \"./module\"\n  alias_provider = aws.west\n}"
+        ],
+        correct: 2, // C
+        concept: "Inside a module, child resources reference a default unaliased provider (e.g., `aws`). The child module maps incoming providers using the `providers = { <child_provider_name> = <root_provider_alias> }` map.",
+        distractor: "Option A incorrectly maps `aws.west` on the left side, which requires the child module to explicitly define `configuration_aliases = [aws.west]`. Without configuration aliases declared in child modules, mapping to default `aws` as in C is standard. Option B & D syntax do not exist in HCL2.",
+        pitfall: "Implicit provider inheritance only passes default (unaliased) provider configurations down to child modules. Aliased providers MUST be passed explicitly via the `providers` meta-argument.",
+        docLink: "https://developer.hashicorp.com/terraform/language/modules/develop/providers"
+      },
+      {
+        id: 7,
+        part: 1,
+        domain: "Provider Architecture",
+        title: "What communication protocol and framework architecture is used between the Terraform CLI binary and modern Provider plugins (Plugin Framework)?",
+        code: "Terraform Core  <==== gRPC over HTTP/2 ====>  Provider Plugin Binary",
+        options: [
+          "JSON-RPC over standard Unix Domain Sockets",
+          "REST APIs over local HTTPS loopback calls",
+          "gRPC over HTTP/2 with protobuf schemas",
+          "Shared C-bindings (`libterraform.so`) dynamic linking"
+        ],
+        correct: 2, // C
+        concept: "Terraform Core and provider plugins run as separate executable binaries that communicate out-of-process via gRPC over HTTP/2. This isolates plugins, prevents crashes in plugins from taking down Core, and allows multi-language plugin development.",
+        distractor: "Option A refers to legacy vagrant/packer communication models. Option B is inefficient and incorrect. Option D is incorrect because C-bindings would force tight memory coupling and remove language independence.",
+        pitfall: "Because providers run as separate binaries managed via RPC, high parallelism (`-parallelism=100`) can saturate inter-process communication or system IPC limits on smaller build runners.",
+        docLink: "https://developer.hashicorp.com/terraform/plugin/framework"
+      },
+      {
+        id: 8,
+        part: 1,
+        domain: "DAG & Cycle Detection",
+        title: "Which scenario causes a Terraform Graph Directed Acyclic Graph (DAG) cycle error during `terraform plan`?",
+        code: "resource \"aws_security_group\" \"A\" {\n  name = \"sg_a\"\n}\nresource \"aws_security_group_rule\" \"rule_a\" {\n  security_group_id        = aws_security_group.A.id\n  source_security_group_id = aws_security_group.B.id\n}",
+        options: [
+          "Resource A references Resource B's ID, and Resource B has an explicit `depends_on = [aws_security_group.A]`.",
+          "Two resources reference the same data source simultaneously using `for_each`.",
+          "A module uses an output from another module located in a separate state file via `terraform_remote_state`.",
+          "Using `count = length(aws_vpc.main.subnets)` where subnets is a dynamic set."
+        ],
+        correct: 0, // A
+        concept: "A cycle occurs when Resource A depends on Resource B (implicitly or explicitly), while Resource B also depends on Resource A (implicitly or via `depends_on`), preventing Terraform from constructing a valid DAG ordering.",
+        distractor: "Option B is valid parallel reading of data sources. Option C involves decoupled state files, which DAG cycle detection does not evaluate across boundaries. Option D triggers count evaluation errors, not a dependency cycle error.",
+        pitfall: "Creating inline security group rules (`ingress { ... }`) inside mutually dependent security groups frequently triggers DAG cycles. Break cycles using separate `aws_security_group_rule` resources.",
+        docLink: "https://developer.hashicorp.com/terraform/language/resources/behavior#resource-dependencies"
+      },
+      {
+        id: 9,
+        part: 1,
+        domain: "State Locking Protocols",
+        title: "When using the AWS S3 backend with DynamoDB state locking, what happens if a `terraform apply` process is abruptly killed (e.g., `kill -9` or power failure)?",
+        code: "# Backend configuration:\nbackend \"s3\" {\n  bucket         = \"my-tf-state\"\n  key            = \"prod/terraform.tfstate\"\n  dynamodb_table = \"terraform-locks\"\n}",
+        options: [
+          "DynamoDB lock automatically expires after a 5-minute TTL.",
+          "The state lock remains active in DynamoDB and requires manual intervention via `terraform force-unlock <LOCK-ID>`.",
+          "S3 automatically reverts the `.tfstate` file to the prior version tag.",
+          "Terraform CLI releases the lock remotely on the next execution automatically without warnings."
+        ],
+        correct: 1, // B
+        concept: "DynamoDB state locks do not use automatic TTL-based auto-expiration to prevent race conditions during long-running applies. If the process dies forcibly without executing its cleanup handler, the lock record remains in DynamoDB.",
+        distractor: "Option A is false; locks do not auto-expire on a short timer. Option C is false; state files in S3 versioning are independent of lock state. Option D is incorrect; subsequent runs will fail with a 'State Locked' error until unlocked.",
+        pitfall: "Running `terraform force-unlock` while another teammate or automated CI pipeline is actively applying will corrupt your state file. Always verify process death before unlocking.",
+        docLink: "https://developer.hashicorp.com/terraform/language/settings/backends/s3#dynamodb-state-locking"
+      },
+      {
+        id: 10,
+        part: 1,
+        domain: "State File Security",
+        title: "Which mechanism guarantees that state data containing sensitive outputs is encrypted at rest in S3 backends?",
+        code: "backend \"s3\" {\n  bucket                 = \"tf-state-secure\"\n  key                    = \"prod.tfstate\"\n  region                 = \"us-east-1\"\n  # Which parameter enforces client/server-side KMS encryption?\n}",
+        options: [
+          "setting `sensitive = true` in backend block",
+          "configuring `encrypt = true` and `kms_key_id` in backend block",
+          "running `terraform apply -encrypt-state`",
+          "adding `protected_state = true` in `terraform` settings block"
+        ],
+        correct: 1, // B
+        concept: "The AWS S3 backend supports server-side encryption via S3 Managed Keys (SSE-S3) or AWS KMS (SSE-KMS) by specifying `encrypt = true` and optional `kms_key_id` directly in the backend block configuration.",
+        distractor: "Option A, C, and D are invalid Terraform syntax or non-existent flags. Backend encryption parameters are specific to backend implementations.",
+        pitfall: "Relying solely on S3 bucket default encryption still allows any IAM principal with `s3:GetObject` permission to read state files. Ensure IAM policies enforce strict KMS key decryption permissions.",
+        docLink: "https://developer.hashicorp.com/terraform/language/settings/backends/s3#encrypt"
+      },
+      {
+        id: 11,
+        part: 1,
+        domain: "Workspaces vs Directory Isolation",
+        title: "Why is using CLI Workspaces (`terraform workspace select`) generally discouraged for separating production and development environments in enterprise architectures?",
+        code: "# CLI Workspaces create state keys like:\n# env:/prod/terraform.tfstate\n# env:/dev/terraform.tfstate",
+        options: [
+          "Workspaces do not support remote state backends.",
+          "Workspaces share the exact same HCL code and backend storage path structure, increasing blast radius and accidental cross-environment destruction risks.",
+          "Workspaces prevent module reuse across team members.",
+          "Workspaces force all resources to use the default provider configuration without aliasing."
+        ],
+        correct: 1, // B
+        concept: "HashiCorp officially recommends directory-based isolation (or HCP Terraform workspaces) for environments like Dev/Prod. CLI Workspaces share the exact same HCL config, meaning a variable error or mistaken CLI context can inadvertently destroy production.",
+        distractor: "Option A is false; CLI workspaces work with remote backends like S3 or Consul. Option C and D are false; modules and providers function normally in CLI workspaces.",
+        pitfall: "Executing `terraform destroy` assuming you are in `dev` workspace while actually focused on `prod` workspace is a top cause of enterprise outages.",
+        docLink: "https://developer.hashicorp.com/terraform/language/state/workspaces#when-to-use-multiple-workspaces"
+      },
+      {
+        id: 12,
+        part: 1,
+        domain: "Provider Alias Inheritance",
+        title: "In a root module configuring multi-region infrastructure, how does Terraform determine which provider instance to assign to a resource that does not specify a `provider` meta-argument?",
+        code: "provider \"aws\" {\n  region = \"us-east-1\"\n}\nprovider \"aws\" {\n  alias  = \"eu\"\n  region = \"eu-west-1\"\n}\nresource \"aws_s3_bucket\" \"b\" {\n  bucket = \"my-global-bucket\"\n}",
+        options: [
+          "It defaults to the first provider block declared in the file regardless of alias.",
+          "It automatically uses the default unaliased provider (`aws`).",
+          "It throws a compilation error requiring explicit `provider` arguments when aliases exist.",
+          "It prompts the user interactively during `terraform apply`."
+        ],
+        correct: 1, // B
+        concept: "When multiple provider configurations exist, the configuration without an `alias` argument is the default provider. Any resource missing an explicit `provider` argument automatically defaults to the unaliased provider configuration.",
+        distractor: "Option A is false; position in file does not determine default status—absence of `alias` does. Option C and D are false.",
+        pitfall: "If all provider blocks specify an `alias`, there is no default provider. Any resource lacking an explicit `provider = aws.alias` will fail to initialize during plan.",
+        docLink: "https://developer.hashicorp.com/terraform/language/providers/configuration#alias-multiple-provider-configurations"
+      },
+      {
+        id: 13,
+        part: 1,
+        domain: "Drift Detection & Refresh Mechanics",
+        title: "What is the key difference between running `terraform plan` vs `terraform plan -refresh-only`?",
+        code: "# Scenario: Cloud infrastructure was modified manually via AWS Console.\n$ terraform plan -refresh-only",
+        options: [
+          "`-refresh-only` updates state to match real-world cloud infrastructure without proposing any changes to bring infrastructure back into alignment with HCL code.",
+          "`-refresh-only` automatically modifies HCL files to match live cloud state.",
+          "`-refresh-only` bypasses provider API queries and evaluates state purely from local cache.",
+          "`-refresh-only` applies changes immediately without prompting for confirmation."
+        ],
+        correct: 0, // A
+        concept: "`terraform plan -refresh-only` inspects real-world infrastructure and proposes updating the `.tfstate` file to reflect external drift, without generating resource creation, modification, or destruction actions against HCL configuration.",
+        distractor: "Option B is false; Terraform never edits `.tf` HCL files automatically. Option C is opposite of truth; refresh queries cloud APIs actively. Option D describes `-auto-approve` apply.",
+        pitfall: "Applying a `-refresh-only` plan overwrites your local state file values with live drift. If live drift contains temporary broken states, your state file will retain those broken attributes.",
+        docLink: "https://developer.hashicorp.com/terraform/cli/commands/plan#refresh-only"
+      },
+      {
+        id: 14,
+        part: 1,
+        domain: "Ephemeral Resources",
+        title: "Introduced in Terraform 1.10+, what is the distinct lifecycle capability of `ephemeral` blocks compared to standard data sources or resources?",
+        code: "ephemeral \"vault_generic_secret\" \"db_pass\" {\n  path = \"secret/data/db\"\n}",
+        options: [
+          "Ephemeral values are permanently cached in state but encrypted with AES-256.",
+          "Ephemeral values are fetched during plan/apply actions but are NEVER written or persisted to the `.tfstate` file or disk.",
+          "Ephemeral resources can only be used inside custom provider Go plugins.",
+          "Ephemeral resources automatically destroy real cloud resources 1 hour after apply."
+        ],
+        correct: 1, // B
+        concept: "Ephemeral resources handle short-lived secrets (like Vault tokens or temporary DB credentials). Their values are available in memory during plan/apply for downstream resource provisioning, but are strictly excluded from state persistence.",
+        distractor: "Option A is false; avoiding state persistence is their core purpose. Option C is false; they are HCL primitives. Option D confuses lifecycle concepts with temporary infrastructure.",
+        pitfall: "Passing an ephemeral resource output into a standard non-ephemeral resource attribute forces the secret into state because the destination resource persists state.",
+        docLink: "https://developer.hashicorp.com/terraform/language/resources/ephemeral"
+      },
+      {
+        id: 15,
+        part: 1,
+        domain: "Chained Moved Blocks",
+        title: "How does Terraform process chained `moved` blocks across multiple module refactoring iterations?",
+        code: "moved {\n  from = aws_instance.web\n  to   = module.app.aws_instance.web\n}\nmoved {\n  from = module.app.aws_instance.web\n  to   = module.v2_app.aws_instance.server\n}",
+        options: [
+          "Terraform fails with a cyclic move error.",
+          "Terraform automatically chains the statements and moves state directly from `aws_instance.web` to `module.v2_app.aws_instance.server`.",
+          "Terraform requires you to execute `terraform state mv` manually for multi-step transitions.",
+          "Terraform only processes the first `moved` block and ignores downstream moves."
+        ],
+        correct: 1, // B
+        concept: "Terraform automatically resolves chains of `moved` blocks. It traces historical addresses across multiple refactoring iterations to smoothly update state from original legacy addresses to current target addresses.",
+        distractor: "Option A, C, and D are incorrect. Terraform's graph solver links `from` and `to` declarations dynamically.",
+        pitfall: "Breaking a chain by removing an intermediate `moved` block will prevent state migration for environments skipping intermediate deployments.",
+        docLink: "https://developer.hashicorp.com/terraform/language/modules/develop/refactoring#chaining-moved-blocks"
+      },
+      {
+        id: 16,
+        part: 1,
+        domain: "Lifecycle Rules Mechanics",
+        title: "What happens if a resource has `prevent_destroy = true` inside its `lifecycle` block, and a configuration change forces resource replacement (destroy and create)?",
+        code: "resource \"aws_db_instance\" \"db\" {\n  allocated_storage = 20\n  engine            = \"postgres\"\n  # changing engine_version forces replacement\n  engine_version    = \"15.2\"\n\n  lifecycle {\n    prevent_destroy = true\n  }\n}",
+        options: [
+          "Terraform bypasses destruction and performs an in-place update.",
+          "Terraform rejects the plan and errors immediately during planning before any infrastructure is altered.",
+          "Terraform creates the replacement resource first, then skips deleting the original resource.",
+          "Terraform prompts for interactive manual override confirmation during apply."
+        ],
+        correct: 1, // B
+        concept: "`prevent_destroy` acts as a safety guardrail during planning. If a proposed change or `terraform destroy` command would result in resource destruction, Terraform halts with an error during the `plan` phase.",
+        distractor: "Option A is false; cloud provider APIs dictate whether updates are in-place or replacement. Option C describes `create_before_destroy` behavior combined with state orphaned resources. Option D is false.",
+        pitfall: "`prevent_destroy` prevents accidental plan execution, but it does NOT protect resources if you run `terraform state rm` or delete the cloud resource via cloud portal.",
+        docLink: "https://developer.hashicorp.com/terraform/language/meta-arguments/resource-lifecycle#prevent_destroy"
+      },
+      {
+        id: 17,
+        part: 1,
+        domain: "State Schema Internals",
+        title: "In Terraform state file structure (V4/V5 schema), what is the purpose of the `lineage` field?",
+        code: "{\n  \"version\": 4,\n  \"terraform_version\": \"1.8.0\",\n  \"serial\": 42,\n  \"lineage\": \"c8e1a2f3-90bd-4a31-b842-123456789abc\",\n  \"outputs\": { ... }\n}",
+        options: [
+          "It tracks the SHA256 checksum of the HCL code files.",
+          "It is a unique UUID assigned when state is created; if lineage between local and remote state differs, Terraform rejects operations to prevent overwriting unrelated state data.",
+          "It records the IAM ARN of the engineer who last applied changes.",
+          "It specifies the provider version compatibility matrix."
+        ],
+        correct: 1, // B
+        concept: "The `lineage` is a unique UUID created when a state file is initialized. Terraform compares lineages to safeguard against overwriting remote state files with state files originating from entirely different infrastructure histories.",
+        distractor: "Option A describes state lock hashes or module manifest hashes. Option C is audit metadata, not lineage. Option D is incorrect.",
+        pitfall: "Manually copying a `terraform.tfstate` file from one project to another without changing the `lineage` UUID can lead to catastrophic state overwrites in shared remote backends.",
+        docLink: "https://developer.hashicorp.com/terraform/language/state"
+      },
+      {
+        id: 18,
+        part: 1,
+        domain: "Plugin Framework Development",
+        title: "When creating a custom provider using the modern Terraform Plugin Framework in Go, which method defines the provider's schema attributes and types?",
+        code: "// Plugin Framework Provider implementation in Go\nfunc (p *ExampleProvider) Schema(ctx context.Context, req provider.SchemaRequest, resp *provider.SchemaResponse) { ... }",
+        options: [
+          "The `Schema` method returning a `schema.Schema` object with attribute definitions",
+          "The `Configure` method parsing raw HCL string buffers directly",
+          "The `Create` method parsing JSON state structs dynamically",
+          "The `ValidateConfig` method executing shell hooks"
+        ],
+        correct: 0, // A
+        concept: "In the modern HashiCorp Plugin Framework for Go, developers implement the `provider.Provider` interface where the `Schema` method defines the structural attributes, types, and flags (required, optional, sensitive) exposed to HCL.",
+        distractor: "Option B (`Configure`) handles client authentication and API key setup. Option C (`Create`) handles resource provisioning. Option D handles runtime validation assertions.",
+        pitfall: "Mixing legacy SDKv2 schema types with Plugin Framework provider types causes compilation errors. Use the correct schema package corresponding to your framework version.",
+        docLink: "https://developer.hashicorp.com/terraform/plugin/framework/schemas"
+      },
+      {
+        id: 19,
+        part: 1,
+        domain: "Policy Enforcement Hooks",
+        title: "Where in the execution lifecycle does Sentinel or OPA (Open Policy Agent) Rego policy enforcement evaluate infrastructure rules during a Terraform Cloud / Enterprise run?",
+        code: "Run Lifecycle: [Speculative Plan] -> [Plan] -> [ Policy Check ] -> [ Apply ]",
+        options: [
+          "Before `terraform init` starts",
+          "After `terraform plan` produces a plan payload, but BEFORE `terraform apply` executes",
+          "Concurrently alongside `terraform apply` step execution",
+          "Post-apply after cloud resources have finished provisioning"
+        ],
+        correct: 1, // B
+        concept: "Policy as Code engines (Sentinel / OPA) evaluate the execution plan output immediately after `terraform plan` completes. If policy checks fail (and advisory overrides do not apply), the run halts before changing live cloud infrastructure.",
+        distractor: "Option A is impossible because plan output must exist for analysis. Option C & D expose cloud environments to compliance breaches before validation occurs.",
+        pitfall: "Writing Sentinel policies that inspect `tfconfig` (HCL) rather than `tfplan` can allow dangerous bypasses through computed values or dynamic variables. Prefer inspecting `tfplan`.",
+        docLink: "https://developer.hashicorp.com/terraform/cloud-docs/policy-enforcement"
+      },
+      {
+        id: 20,
+        part: 1,
+        domain: "Run Triggers & Cross-Workspace Dependencies",
+        title: "In HCP Terraform / Terraform Enterprise, how do Run Triggers connect workspaces?",
+        code: "# Workspace Networking -> triggers -> Workspace Applications",
+        options: [
+          "They automatically execute a `terraform apply` in a downstream workspace whenever an upstream workspace successfully applies changes.",
+          "They merge the state files of two workspaces into a single unified state file.",
+          "They sync environment variables across workspace borders.",
+          "They force downstream workspaces to share a local disk worker."
+        ],
+        correct: 0, // A
+        concept: "Run Triggers establish cross-workspace orchestration pipelines. When an upstream workspace (e.g., core networking) successfully completes a run, linked downstream workspaces (e.g., app services) are triggered automatically.",
+        distractor: "Option B is false; state separation remains intact. Option C is false; variable sets handle variable sharing. Option D is false.",
+        pitfall: "Chaining circular Run Triggers across workspaces creates infinite plan loops in Terraform Cloud.",
+        docLink: "https://developer.hashicorp.com/terraform/cloud-docs/workspaces/settings/run-triggers"
+      },
+      {
+        id: 21,
+        part: 1,
+        domain: "Native Testing Framework",
+        title: "In the native `terraform test` framework (introduced in 1.6+), what file extension and structure are used to declare automated test suites?",
+        code: "# file: tests/website.tftest.hcl\nrun \"verify_status_code\" {\n  command = plan\n  assert {\n    condition     = aws_s3_bucket.site.bucket == \"my-test-bucket\"\n    error_message = \"Bucket name mismatch\"\n  }\n}",
+        options: [
+          "`.tfspec` files using Ruby syntax",
+          "`.tftest.hcl` files using `run` blocks with assertions",
+          "`.go` files using `terratest` binary packages",
+          "`.yaml` files using JSON-schema checks"
+        ],
+        correct: 1, // B
+        concept: "`terraform test` reads `.tftest.hcl` (or `.tftest.json`) files containing sequential `run` blocks that execute plan/apply commands against test configurations and evaluate embedded `assert` conditions.",
+        distractor: "Option A is non-existent syntax. Option C describes Terratest, a 3rd-party Go library, not native HCL testing. Option D is invalid.",
+        pitfall: "Running `command = apply` inside test suites provisions real infrastructure. Ensure mock providers or temporary test cloud credentials are used to avoid unexpected cloud spend.",
+        docLink: "https://developer.hashicorp.com/terraform/language/tests"
+      },
+      {
+        id: 22,
+        part: 1,
+        domain: "Provider Schema State Upgraders",
+        title: "When a provider plugin developer alters a resource schema structure across versions (e.g., changing an attribute from string to integer), how does Terraform migrate existing state files gracefully?",
+        code: "// Plugin SDK/Framework StateUpgrader implementation\nStateUpgraders: []schema.StateUpgrader{\n  {\n    Version: 0,\n    Type:    rawStateStructV0,\n    Upgrade: migrateV0toV1,\n  },\n}",
+        options: [
+          "Terraform forces the user to manually edit the state JSON file.",
+          "The provider registers a `StateUpgrader` function that intercepts older state versions and transforms them into the new schema structure during refresh.",
+          "Terraform destroys and recreates the resource automatically.",
+          "Terraform ignores schema changes and leaves attributes unparsed."
+        ],
+        correct: 1, // B
+        concept: "Providers define schema versions and `StateUpgrader` functions. When Terraform reads a state file stored with an older schema version integer, it executes state upgraders sequentially to transform the JSON structure before planning.",
+        distractor: "Option A is dangerous and error-prone. Option C causes unnecessary downtime for production infrastructure. Option D causes application panics.",
+        pitfall: "If state versioning skipping occurs (e.g., jumping across 5 major provider versions), intermediate state upgraders might be missing, forcing manual state intervention.",
+        docLink: "https://developer.hashicorp.com/terraform/plugin/framework/resources/state-upgrade"
+      },
+      {
+        id: 23,
+        part: 1,
+        domain: "Cross-State Data Access",
+        title: "What is the primary security advantage of using HashiCorp Cloud Platform (HCP) Workspace Outputs data sources (`tfe_outputs`) over generic `terraform_remote_state`?",
+        code: "data \"tfe_outputs\" \"networking\" {\n  organization = \"my-corp\"\n  workspace    = \"vpc-prod\"\n}",
+        options: [
+          "Outputs are retrieved over gRPC rather than HTTP.",
+          "`tfe_outputs` exposes ONLY explicit, designated output values without granting full read access to the entire state file (which contains raw secrets).",
+          "`tfe_outputs` eliminates the need for state locking.",
+          "`tfe_outputs` executes without network permissions."
+        ],
+        correct: 1, // B
+        concept: "`terraform_remote_state` requires read access to the entire backend state file (exposing all resource passwords/keys). `tfe_outputs` queries HCP Terraform API endpoints to fetch only exposed workspace outputs, enforcing least-privilege access.",
+        distractor: "Option A, C, and D are technically incorrect statements regarding `tfe_outputs` API design.",
+        pitfall: "Granting team members access to `terraform_remote_state` S3 keys exposes all secrets in that state file. Use HCP outputs or Vault for secret sharing.",
+        docLink: "https://registry.terraform.io/providers/hashicorp/tfe/latest/docs/data-sources/outputs"
+      },
+      {
+        id: 24,
+        part: 1,
+        domain: "Execution Modes in Terraform Cloud",
+        title: "When an HCP Terraform workspace is configured with `Execution Mode = Local`, where are `terraform plan` and `terraform apply` operations computed?",
+        code: "HCP Terraform Workspace Settings:\nExecution Mode: [ Remote | Local | Agent ]",
+        options: [
+          "On HashiCorp-managed cloud worker instances",
+          "On the local CLI machine running the `terraform` binary, while state remains stored remotely in HCP Terraform",
+          "On self-hosted isolated Kubernetes agent pods",
+          "In the cloud provider's serverless runtime automatically"
+        ],
+        correct: 1, // B
+        concept: "In `Local` execution mode, execution logic (provider API calls, plan computation) runs locally on the engineer's workstation, but state locking and state file storage remain centralized in HCP Terraform.",
+        distractor: "Option A describes `Remote` execution mode. Option C describes `Agent` execution mode. Option D is incorrect.",
+        pitfall: "Local execution mode bypasses centralized VCS triggers and Sentinel policy enforcement checks configured in Terraform Cloud.",
+        docLink: "https://developer.hashicorp.com/terraform/cloud-docs/workspaces/settings/execution-modes"
+      },
+      {
+        id: 25,
+        part: 1,
+        domain: "Dynamic Blocks Mechanics",
+        title: "Which nested structure inside a `dynamic` block defines the temporary iterator variable used when iterating over complex data lists?",
+        code: "resource \"aws_security_group\" \"example\" {\n  name = \"example\"\n\n  dynamic \"ingress\" {\n    for_each = var.service_ports\n    # Which inner block contains the dynamic attribute assignments?\n    content {\n      from_port = ingress.value\n      to_port   = ingress.value\n      protocol  = \"tcp\"\n    }\n  }\n}",
+        options: [
+          "`body` block",
+          "`content` block",
+          "`template` block",
+          "`item` block"
+        ],
+        correct: 1, // B
+        concept: "`dynamic` blocks require a `content` block argument. The `content` block defines the actual HCL attributes and values assigned to each generated nested block during evaluation.",
+        distractor: "Option A, C, and D are invalid HCL keywords in dynamic block syntax.",
+        pitfall: "If you specify an explicit `iterator = port` argument in a `dynamic` block, you must reference `port.value` inside `content`, not `ingress.value`.",
+        docLink: "https://developer.hashicorp.com/terraform/language/expressions/dynamic-blocks"
+      },
+
+      // PART 2: ADVANCED STATE, PLUGINS & ENTERPRISE (Q26 - Q50)
+      {
+        id: 26,
+        part: 2,
+        domain: "Advanced State Refactoring",
+        title: "You need to split a monolithic state file containing 200 resources into 3 smaller state files without destroying cloud infrastructure. What is the safest CLI procedure?",
+        code: "# Desired outcome: Move aws_vpc.main from monolithic state to vpc.tfstate",
+        options: [
+          "Delete the VPC from the original `.tf` file and run `terraform apply -auto-approve`.",
+          "Run `terraform state rm aws_vpc.main` in the original workspace, then use `import` blocks in the new state workspace.",
+          "Copy `terraform.tfstate` directly and edit the raw JSON text using an editor.",
+          "Run `terraform state mv -state-out=vpc.tfstate aws_vpc.main aws_vpc.main` in a single unvalidated step."
+        ],
+        correct: 1, // B
+        concept: "Removing a resource from state management via `terraform state rm` leaves real cloud infrastructure untouched. Then, using declarative `import` blocks in the target configuration safely binds existing cloud resources to the new state file.",
+        distractor: "Option A will trigger cloud deletion of the VPC, causing an outage. Option C risks JSON schema corruption and lineage mismatches. Option D can corrupt state if backend locking or target configurations aren't matched.",
+        pitfall: "Running `terraform state rm` without backup files (`terraform.tfstate.backup`) leaves you with no fallback if you make a typo in resource keys.",
+        docLink: "https://developer.hashicorp.com/terraform/cli/commands/state/rm"
+      },
+      {
+        id: 27,
+        part: 2,
+        domain: "Provider SDK Migration",
+        title: "What is the key architectural difference in data handling between legacy Provider SDKv2 and the modern Plugin Framework?",
+        code: "// Legacy SDKv2 uses map[string]interface{}\n// Modern Plugin Framework uses custom tftypes / strongly typed Go models",
+        options: [
+          "Plugin Framework relies on string parsing, whereas SDKv2 used binary byte buffers.",
+          "SDKv2 forced type coercion to generic interface mapping, while Plugin Framework uses explicit strong typing (`tftypes`) that fully supports unknown/null handling.",
+          "SDKv2 ran in-process, while Plugin Framework runs as a separate binary.",
+          "SDKv2 only supported AWS, while Plugin Framework supports all clouds."
+        ],
+        correct: 1, // B
+        concept: "Plugin Framework uses strong type models (`tftypes`) allowing precise distinction between `null` (unset), `unknown` (computed during plan), and concrete values, solving long-standing SDKv2 limitations with dynamic types.",
+        distractor: "Option A is false. Option C is false (both run out-of-process via gRPC). Option D is absurd.",
+        pitfall: "In SDKv2, an unassigned string attribute defaulted to empty string `\"\"`, making it hard to detect explicit nulls. Plugin Framework fixes this with explicit `attr.Value` types.",
+        docLink: "https://developer.hashicorp.com/terraform/plugin/framework/migrating"
+      },
+      {
+        id: 28,
+        part: 2,
+        domain: "Terragrunt vs Native Terraform",
+        title: "In native Terraform 1.6+, which built-in feature significantly reduces the need for Terragrunt's DRY backend generation pattern (`remote_state`)?",
+        code: "# Native Terraform backend configuration with dynamic initialization:\n$ terraform init -backend-config=backend.tfvars",
+        options: [
+          "Partial backend configuration using `-backend-config` CLI parameters",
+          "Dynamic nested backend blocks inside resource configurations",
+          "Automatic creation of S3 buckets during plan phase",
+          "Native HCL support for importing external Terragrunt configuration files"
+        ],
+        correct: 0, // A
+        concept: "Native Terraform allows defining an empty or partial backend block in HCL (`backend \"s3\" {}`), and passing environment-specific state backend key/bucket paths dynamically at runtime via `-backend-config=path/to/config.tfvars`.",
+        distractor: "Option B is invalid HCL syntax. Option C is false; state backends must pre-exist before `init`. Option D is false.",
+        pitfall: "Forgetting to supply `-backend-config` during initial `terraform init` in automated CI pipelines causes state initialization errors or unintended local state fallbacks.",
+        docLink: "https://developer.hashicorp.com/terraform/language/settings/backends/configuration#partial-configuration"
+      },
+      {
+        id: 29,
+        part: 2,
+        domain: "Multi-Region Architecture",
+        title: "Which pattern correctly instantiates a child module across two different AWS regions simultaneously within the same root configuration?",
+        code: "# Root configuration has aws.us_east and aws.us_west providers defined.\n# How do you pass both to a module that manages cross-region replication?",
+        options: [
+          "module \"replication\" {\n  source = \"./module\"\n  region = [\"us-east-1\", \"us-west-2\"]\n}",
+          "module \"primary\" {\n  source    = \"./module\"\n  providers = { aws = aws.us_east }\n}\nmodule \"secondary\" {\n  source    = \"./module\"\n  providers = { aws = aws.us_west }\n}",
+          "module \"replication\" {\n  source      = \"./module\"\n  multi_region = true\n}",
+          "provider \"aws\" {\n  regions = [\"us-east-1\", \"us-west-2\"]\n}"
+        ],
+        correct: 1, // B
+        concept: "Multi-region deployments require declaring distinct provider instances with `alias` blocks in root, and instantiating child module calls explicitly mapping regional provider instances via the `providers = { ... }` argument.",
+        distractor: "Option A passes string variables, but provider blocks inside child modules cannot re-initialize dynamically from string lists. Option C & D use fabricated non-existent arguments.",
+        pitfall: "Attempting to declare `provider \"aws\" { ... }` inside child modules limits module reusability and breaks provider inheritance rules.",
+        docLink: "https://developer.hashicorp.com/terraform/language/modules/develop/providers#passing-providers-explicitly"
+      },
+      {
+        id: 30,
+        part: 2,
+        domain: "Variable Precedence Rules",
+        title: "If a variable `db_port` is defined in multiple places, which source takes HIGHEST precedence according to Terraform evaluation order?",
+        code: "1. Default value in variable block\n2. terraform.tfvars file\n3. Environment variable TF_VAR_db_port=3306\n4. -var=\"db_port=5432\" command line flag",
+        options: [
+          "Environment variable (`TF_VAR_db_port`)",
+          "`terraform.tfvars` file",
+          "`-var` or `-var-file` CLI flag",
+          "Default value in variable definition block"
+        ],
+        correct: 2, // C
+        concept: "Terraform variable precedence order (from lowest to highest): 1. Default values -> 2. Environment variables (`TF_VAR_x`) -> 3. `terraform.tfvars` -> 4. `*.auto.tfvars` -> 5. CLI flags (`-var` or `-var-file`). CLI flags override all other sources.",
+        distractor: "Option A, B, and D are lower in the precedence hierarchy.",
+        pitfall: "Setting environment variables (`TF_VAR_`) in CI runner systems can silently override `terraform.tfvars` if developers misunderstand precedence ranking.",
+        docLink: "https://developer.hashicorp.com/terraform/language/values/variables#variable-definition-precedence"
+      },
+      {
+        id: 31,
+        part: 2,
+        domain: "Blue-Green Deployment Patterns",
+        title: "When orchestrating Blue-Green blue-green infrastructure deployments natively in Terraform, how can you force replacement of a launch template before updating an autoscaling group?",
+        code: "resource \"aws_launch_template\" \"app\" {\n  name_prefix = \"app-v2-\"\n  # Which lifecycle setting ensures zero-downtime replacement?\n  lifecycle {\n    create_before_destroy = true\n  }\n}",
+        options: [
+          "Setting `prevent_destroy = true`",
+          "Setting `create_before_destroy = true` on the launch template and dependent resources",
+          "Adding `depends_on = [aws_autoscaling_group.app]`",
+          "Using `terraform apply -replace=aws_launch_template.app`"
+        ],
+        correct: 1, // B
+        concept: "`create_before_destroy = true` alters dependency resolution during resource replacement. Terraform provisions the new replacement infrastructure first, updates references (like target groups), and destroys legacy resources afterward.",
+        distractor: "Option A halts destruction. Option C creates a circular dependency DAG error. Option D forces imperative manual flags rather than declarative design.",
+        pitfall: "If a resource with `create_before_destroy = true` depends on a unique name constraint (e.g., explicit bucket or security group name), the apply will fail because the new resource cannot use the existing name.",
+        docLink: "https://developer.hashicorp.com/terraform/language/meta-arguments/resource-lifecycle#create_before_destroy"
+      },
+      {
+        id: 32,
+        part: 2,
+        domain: "State Lock Recovery Risks",
+        title: "What is the critical risk when executing `terraform force-unlock <LOCK-ID>`?",
+        code: "$ terraform force-unlock e7d23a1b-4f89-4a11-8012-999988887777",
+        options: [
+          "It permanently deletes all local state backup files.",
+          "If another execution is actively writing to state, concurrent writes will corrupt state JSON and cause data loss.",
+          "It revokes cloud IAM credentials associated with the provider.",
+          "It triggers an immediate `terraform destroy` on active resources."
+        ],
+        correct: 1, // B
+        concept: "State locking prevents concurrent writes. If you force-unlock while another CI runner or teammate is actively executing an apply, simultaneous writes will corrupt or truncate the remote state file.",
+        distractor: "Option A, C, and D describe unrelated operations that force-unlock does not trigger.",
+        pitfall: "Always double-check process lists or lock owner info output by the locking error message before running `force-unlock`.",
+        docLink: "https://developer.hashicorp.com/terraform/cli/commands/force-unlock"
+      },
+      {
+        id: 33,
+        part: 2,
+        domain: "Vault Provider Secrets Integration",
+        title: "When fetching dynamic secrets (e.g. AWS temporary credentials) from Vault via the Vault provider, why is it recommended to configure short TTLs in Vault?",
+        code: "data \"vault_aws_access_credentials\" \"creds\" {\n  backend = \"aws\"\n  role    = \"deploy-role\"\n  type    = \"creds\"\n}",
+        options: [
+          "Because Terraform state files expire after 1 hour.",
+          "To ensure generated cloud API keys automatically expire shortly after the Terraform apply run finishes, reducing risk if state files are compromised.",
+          "Because Vault does not allow lease durations over 15 minutes.",
+          "To force Terraform to re-download providers on every apply."
+        ],
+        correct: 1, // B
+        concept: "Dynamic Vault credentials generated during `terraform plan/apply` are written to state in plain text. Utilizing short TTL leases guarantees those exposed cloud credentials auto-revoke shortly after deployment completes.",
+        distractor: "Option A is false; state files do not expire automatically. Option C is false; Vault default max TTLs are configurable up to days/months. Option D is false.",
+        pitfall: "If dynamic Vault leases are extremely short (e.g., 30 seconds) and a `terraform apply` takes 5 minutes to run, credentials will expire mid-apply, failing operations.",
+        docLink: "https://registry.terraform.io/providers/hashicorp/vault/latest/docs/data-sources/aws_access_credentials"
+      },
+      {
+        id: 34,
+        part: 2,
+        domain: "Policy Enforcement Levels",
+        title: "In HashiCorp Cloud Platform Sentinel policies, what is the difference between `advisory` vs `hard-mandatory` enforcement levels?",
+        code: "# Sentinel policy definition:\nenforcement_level = \"hard-mandatory\"",
+        options: [
+          "Advisory sends an email warning; Hard-mandatory deletes non-compliant cloud resources.",
+          "Advisory allows runs to proceed regardless of failure; Hard-mandatory blocks apply execution entirely and CANNOT be overridden by workspace admins.",
+          "Advisory blocks runs until approved; Hard-mandatory automatically fixes code.",
+          "Advisory applies to non-prod; Hard-mandatory applies to prod."
+        ],
+        correct: 1, // B
+        concept: "Sentinel policy enforcement levels: `advisory` (prints warning, run continues), `soft-mandatory` (blocks run, but authorized users can override), `hard-mandatory` (strictly halts run; zero overrides allowed).",
+        distractor: "Option A is false; Sentinel does not modify existing resources on failure. Option C & D describe inaccurate operational concepts.",
+        pitfall: "Setting all organization policies to `hard-mandatory` during initial policy adoption can paralyze developer workflows before policies are thoroughly tested.",
+        docLink: "https://developer.hashicorp.com/terraform/cloud-docs/policy-enforcement/sentinel/import/tfplan-v2"
+      },
+      {
+        id: 35,
+        part: 2,
+        domain: "Custom Backend Implementation",
+        title: "Why is creating custom backend plugins directly inside community Terraform code generally not supported for standard end-user extensions?",
+        code: "// Backend implementation in Terraform Core Go source code\ntype Backend interface { ... }",
+        options: [
+          "Backends are compiled directly into the core `terraform` CLI binary, unlike providers which run as external gRPC plugins.",
+          "Backends can only be written in C++.",
+          "Custom backends require AWS approval.",
+          "Backends are restricted to HashiCorp Enterprise edition."
+        ],
+        correct: 0, // A
+        concept: "Unlike provider plugins which communicate over gRPC, state backends are compiled natively inside the core Terraform CLI binary for security and bootstrap ordering reasons. Creating a custom backend requires recompiling Core.",
+        distractor: "Option B is false (Terraform Core is Go). Option C and D are false.",
+        pitfall: "Attempting to create custom backend plugins via standard plugin interfaces is impossible; developers needing custom backend behavior should leverage HTTPS/Consul generic backends instead.",
+        docLink: "https://developer.hashicorp.com/terraform/language/settings/backends/configuration"
+      },
+      {
+        id: 36,
+        part: 2,
+        domain: "Private Module Sources & Semantic Versioning",
+        title: "Which module source string format correctly targets a private Git repository with a specific semantic version tag `v2.4.0` using SSH authentication?",
+        code: "# Private module source syntax:",
+        options: [
+          "source = \"git::git@github.com:acme/terraform-aws-vpc.git?ref=v2.4.0\"",
+          "source = \"github.com/acme/terraform-aws-vpc#v2.4.0\"",
+          "source = \"private::https://github.com/acme/terraform-aws-vpc:v2.4.0\"",
+          "source = \"module-registry::aws-vpc::2.4.0\""
+        ],
+        correct: 0, // A
+        concept: "Generic Git SSH repository sources use the `git::ssh://` or `git::git@host:org/repo.git` prefix with the `?ref=tag` query parameter to pin precise module tags/commits.",
+        distractor: "Option B uses invalid syntax for SSH tags. Option C and D use fabricated non-existent protocol schemas.",
+        pitfall: "Omitting the `?ref=` query parameter causes Terraform to default to the repository's default branch (`main`), leading to unintended breaking upgrades when commits merge.",
+        docLink: "https://developer.hashicorp.com/terraform/language/modules/sources#generic-git-repository"
+      },
+      {
+        id: 37,
+        part: 2,
+        domain: "Set Matrix Transformation Functions",
+        title: "You have two lists: `subnets = [\"sub-a\", \"sub-b\"]` and `environments = [\"dev\", \"prod\"]`. Which function combination generates a flattened list of all Cartesian product pairs?",
+        code: "# Desired outcome: [ {\"sub-a\", \"dev\"}, {\"sub-a\", \"prod\"}, {\"sub-b\", \"dev\"}, {\"sub-b\", \"prod\"} ]",
+        options: [
+          "zipmap(var.subnets, var.environments)",
+          "setproduct(var.subnets, var.environments)",
+          "concat(var.subnets, var.environments)",
+          "merge(var.subnets, var.environments)"
+        ],
+        correct: 1, // B
+        concept: "`setproduct()` computes the Cartesian product of two or more sets/lists, returning a list of tuple combinations representing every possible pair combination.",
+        distractor: "Option A (`zipmap`) constructs a map from keys and values lists of equal length. Option C (`concat`) concatenates lists sequentially. Option D (`merge`) combines maps.",
+        pitfall: "Passing large arrays into `setproduct()` causes exponential combinatorial growth, leading to plan memory exhaustion.",
+        docLink: "https://developer.hashicorp.com/terraform/language/functions/setproduct"
+      },
+      {
+        id: 38,
+        part: 2,
+        domain: "CLI Execution Graph Steps",
+        title: "In Terraform Core execution graph evaluation, what step occurs immediately AFTER state refresh and BEFORE generating the proposed action set?",
+        code: "Graph Pipeline: State Refresh -> [ Step X ] -> Action Graph Generation -> Diff Plan",
+        options: [
+          "State lock release",
+          "Evaluation of configuration expressions and conditional expressions against current state and variables",
+          "Provider plugin binary download from registry",
+          "Execution of `local-exec` provisioners"
+        ],
+        correct: 1, // B
+        concept: "After refreshing live infrastructure attributes into state, Core evaluates configuration expressions, local variables, and input variables against that state to calculate desired configurations before building diff actions.",
+        distractor: "Option A occurs at the very end of execution. Option C occurs during `init`. Option D occurs during `apply` phase execution.",
+        pitfall: "Modifying variables while a plan is generating will yield inconsistent expression evaluation.",
+        docLink: "https://developer.hashicorp.com/terraform/cli/architecture"
+      },
+      {
+        id: 39,
+        part: 2,
+        domain: "Concurrency & Rate Limiting",
+        title: "When managing thousands of resources in a single state file, cloud provider APIs frequently return `429 Too Many Requests` rate limit errors during plans. How can you limit parallel worker threads in Terraform CLI?",
+        code: "$ terraform apply <flag>",
+        options: [
+          "Set flag `-parallelism=n` (e.g. `-parallelism=5`)",
+          "Set flag `-concurrency-limit=n`",
+          "Set environment variable `TF_THREADS=1`",
+          "Add `max_threads = 5` inside `terraform` block"
+        ],
+        correct: 0, // A
+        concept: "The `-parallelism=n` flag controls the maximum number of concurrent resource graph operations during state refresh and plan/apply walk. Default is 10.",
+        distractor: "Option B, C, and D are invalid flags/settings in Terraform.",
+        pitfall: "Reducing `-parallelism=1` serializes execution, preventing rate limit errors but drastically increasing execution duration for large configurations.",
+        docLink: "https://developer.hashicorp.com/terraform/cli/commands/apply#parallelism-n"
+      },
+      {
+        id: 40,
+        part: 2,
+        domain: "Handling Circular Dependencies",
+        title: "An AWS VPC needs a NAT Gateway (which requires an Elastic IP), but the Elastic IP deployment depends on an output from a Lambda setup that requires VPC subnets. How do you resolve this DAG circular dependency?",
+        code: "VPC -> Elastic IP -> Lambda -> VPC Subnets (CYCLE ERROR!)",
+        options: [
+          "Use `-force-dag-override` CLI flag during plan",
+          "Decouple resource dependencies by separating resource creation into independent modules or utilizing `aws_eip` without explicit module output coupling",
+          "Wrap resources in `dynamic` blocks",
+          "Set `depends_on = []` explicitly on all resources"
+        ],
+        correct: 1, // B
+        concept: "Circular dependencies occur due to tight coupling across resource attributes. Resolution requires decoupling dependencies—such as breaking resources into separate stages or splitting resource definitions so inputs do not loop.",
+        distractor: "Option A is a fake CLI flag. Option C does not remove DAG dependencies. Option D does not clear implicit resource attribute dependencies.",
+        pitfall: "Adding `depends_on` blindly often introduces tighter graph constraints rather than resolving existing cycles.",
+        docLink: "https://developer.hashicorp.com/terraform/language/resources/behavior#resource-dependencies"
+      },
+      {
+        id: 41,
+        part: 2,
+        domain: "Private Registry Integration",
+        title: "What is the standard module source format when fetching a module from a private HCP Terraform / Terraform Enterprise registry?",
+        code: "# Target hostname: app.terraform.io\n# Organization: enterprise-corp\n# Module: vpc / aws",
+        options: [
+          "source = \"app.terraform.io/enterprise-corp/vpc/aws\"",
+          "source = \"private-registry://app.terraform.io/vpc-aws\"",
+          "source = \"tfe::enterprise-corp/vpc/aws\"",
+          "source = \"https://app.terraform.io/modules/enterprise-corp/vpc/aws\""
+        ],
+        correct: 0, // A
+        concept: "Private Terraform module registry sources follow the format `<HOSTNAME>/<ORGANIZATION>/<NAME>/<PROVIDER>`. Terraform CLI uses domain lookup to authenticate against the private registry.",
+        distractor: "Option B, C, and D use incorrect protocol schemas.",
+        pitfall: "Executing `terraform init` against private registries requires configuring CLI credentials in `~/.terraformrc` or via `credentials` blocks/environment variables (`TF_TOKEN_app_terraform_io`).",
+        docLink: "https://developer.hashicorp.com/terraform/language/modules/sources#private-registry"
+      },
+      {
+        id: 42,
+        part: 2,
+        domain: "Micro-State Architectures & Blast Radius",
+        title: "What is the primary architectural goal of adopting a Micro-State Architecture (decomposing monolithic state into multiple small state files)?",
+        code: "Monolithic: 1 state file (500 resources)\nMicro-State: 10 state files (50 resources each)",
+        options: [
+          "To bypass cloud provider API billings",
+          "To minimize blast radius, reduce lock contention, lower execution plan time, and restrict privilege scope across team domains",
+          "To eliminate the need for module versioning",
+          "To force all plans to run sequentially"
+        ],
+        correct: 1, // B
+        concept: "Splitting states reduces blast radius (an error damages only a small subset of infrastructure), speeds up execution times by reducing plan traversal sizes, and isolates access permissions.",
+        distractor: "Option A, C, and D are incorrect statements.",
+        pitfall: "Over-decomposing into hundreds of tiny state files introduces management complexity for cross-state references using data sources.",
+        docLink: "https://developer.hashicorp.com/terraform/tutorials/language/state-architecture-overview"
+      },
+      {
+        id: 43,
+        part: 2,
+        domain: "Exec Provisioners Alternatives",
+        title: "Why does HashiCorp explicitly designate provisioners (`local-exec`, `remote-exec`) as a LAST RESORT in production configurations?",
+        code: "resource \"aws_instance\" \"web\" {\n  # Provisioner anti-pattern:\n  provisioner \"local-exec\" {\n    command = \"echo ${self.private_ip} > ip.txt\"\n  }\n}",
+        options: [
+          "Because provisioners require root administrative permissions on host CLI machines.",
+          "Because provisioners do not model state or drift natively, are non-declarative, break idempotent execution, and can fail leaving resource state partially configured.",
+          "Because provisioners are deprecated and removed in Terraform 1.5.",
+          "Because provisioners cannot read resource attributes."
+        ],
+        correct: 1, // B
+        concept: "Provisioners execute imperative shell commands outside Terraform's declarative dependency engine. They do not support drift detection, state tracking, or clean rollback, introducing flakiness.",
+        distractor: "Option A is false. Option C is false (provisioners exist, but are discouraged). Option D is false.",
+        pitfall: "Relying on `local-exec` to bootstrap cloud resources often fails in automated CI/CD runners that lack necessary local tool dependencies (e.g., `curl`, `ansible`). Use cloud-init or custom providers instead.",
+        docLink: "https://developer.hashicorp.com/terraform/language/resources/provisioners/syntax#provisioners-are-a-last-resort"
+      },
+      {
+        id: 44,
+        part: 2,
+        domain: "Infrastructure Drift Remediation",
+        title: "If a cloud engineer manually edits an AWS Security Group rule in the console, how does standard `terraform plan` remediate this drift?",
+        code: "$ terraform plan\n# Note: Console manual edits detected.",
+        options: [
+          "Terraform ignores manual console edits unless `-force-remediate` is passed.",
+          "Terraform detects the difference during state refresh and proposes a plan to modify or recreate the resource to revert live state back to declared HCL configuration.",
+          "Terraform automatically modifies local HCL code files to match the console change.",
+          "Terraform fails the plan step with a security violation error."
+        ],
+        correct: 1, // B
+        concept: "`terraform plan` compares refreshed live infrastructure attributes against declared HCL code. When drift is detected, Terraform generates corrective actions (updates/recreations) to restore live infrastructure to the desired declarative state.",
+        distractor: "Option A is false; drift detection is default behavior. Option C is false. Option D is false.",
+        pitfall: "If someone manually modifies a resource and you run `terraform plan -refresh=false`, drift will go undetected, leading to potential unexpected overwrites during apply.",
+        docLink: "https://developer.hashicorp.com/terraform/tutorials/cli/drift"
+      },
+      {
+        id: 45,
+        part: 2,
+        domain: "S3 State Bucket Security",
+        title: "Which AWS S3 bucket configuration best practice prevents accidental destruction of historical Terraform state snapshots?",
+        code: "resource \"aws_s3_bucket_versioning\" \"state\" {\n  bucket = aws_s3_bucket.state.id\n  versioning_configuration {\n    status = \"Enabled\"\n  }\n}",
+        options: [
+          "Enabling S3 Bucket Versioning and MFA Delete",
+          "Setting bucket access to public read-write",
+          "Disabling S3 object lock",
+          "Setting state files to S3 Glacier Deep Archive immediately"
+        ],
+        correct: 0, // A
+        concept: "Enabling S3 Bucket Versioning maintains every historical revision of `.tfstate`. Combined with MFA Delete and Object Lock, it protects against accidental state deletion or ransomware overwrites.",
+        distractor: "Option B destroys security. Option C removes protections. Option D causes latency and high retrieval costs during normal plan runs.",
+        pitfall: "Without versioning, a corrupted state apply overwrites the single `.tfstate` object in S3, making recovery difficult.",
+        docLink: "https://developer.hashicorp.com/terraform/language/settings/backends/s3"
+      },
+      {
+        id: 46,
+        part: 2,
+        domain: "Provider Schema Validation",
+        title: "Where is resource attribute schema type validation (e.g. checking if a port string is a valid integer) executed?",
+        code: "resource \"aws_security_group_rule\" \"r\" {\n  from_port = \"invalid_number\" # Validation failure!\n}",
+        options: [
+          "In the cloud API endpoint post-request",
+          "Locally inside the Provider Plugin binary during the initial RPC plan phase before making API calls",
+          "In the Terraform Core CLI parser using regex text matches",
+          "In the backend database server"
+        ],
+        correct: 1, // B
+        concept: "During planning, Terraform Core passes proposed HCL configuration attributes to the provider plugin over gRPC (`ValidateResourceConfig` RPC). The provider plugin enforces schema constraints locally before cloud API calls.",
+        distractor: "Option A is inefficient. Option C is false; Core delegates type validation to the provider schema. Option D is false.",
+        pitfall: "Relying purely on provider schema validation won't catch business logic errors (e.g., verifying an AMI exists in cloud account). Use custom HCL `precondition` blocks for custom assertions.",
+        docLink: "https://developer.hashicorp.com/terraform/plugin/framework/validation"
+      },
+      {
+        id: 47,
+        part: 2,
+        domain: "Variable Validation Rules",
+        title: "What is the requirement for the `condition` expression inside a variable `validation` block?",
+        code: "variable \"environment\" {\n  type = string\n  validation {\n    condition     = contains([\"dev\", \"stage\", \"prod\"], var.environment)\n    error_message = \"The environment variable must be dev, stage, or prod.\"\n  }\n}",
+        options: [
+          "The condition expression can reference other variable definitions in the module.",
+          "The condition expression can ONLY reference the variable itself (`var.<var_name>`) and must return a boolean (`true`/`false`).",
+          "The condition expression can query live resources using data sources.",
+          "The condition expression must be written in Sentinel code."
+        ],
+        correct: 1, // B
+        concept: "Variable `validation` block conditions are isolated pure functions. They can ONLY reference the variable being validated (`var.<name>`) and must evaluate to a boolean result.",
+        distractor: "Option A is false; variable validations cannot reference sibling variables. Option C is false; data source calls are disallowed inside variable validation. Option D is false.",
+        pitfall: "Attempting to reference `var.other_variable` inside a variable validation block results in a compilation error. Use resource `precondition` blocks to validate relationships between multiple variables.",
+        docLink: "https://developer.hashicorp.com/terraform/language/values/variables#custom-validation-rules"
+      },
+      {
+        id: 48,
+        part: 2,
+        domain: "CLI Tracing & Debug Logs",
+        title: "Which environment variable level produces the most exhaustive verbose log output, including raw gRPC RPC payloads sent between Core and Provider plugins?",
+        code: "$ export TF_LOG=TRACE\n$ terraform plan",
+        options: [
+          "TF_LOG=INFO",
+          "TF_LOG=WARN",
+          "TF_LOG=DEBUG",
+          "TF_LOG=TRACE"
+        ],
+        correct: 3, // D
+        concept: "`TF_LOG=TRACE` is the most verbose logging level in Terraform. It outputs raw gRPC protocol buffers, plugin IPC calls, detailed DAG graph walks, and HTTP request headers.",
+        distractor: "Option A, B, and C are less detailed logging levels.",
+        pitfall: "`TF_LOG=TRACE` outputs raw HTTP bodies and provider payloads, which may expose unmasked sensitive keys or tokens in terminal logs. Never paste TRACE logs into public forums without sanitizing.",
+        docLink: "https://developer.hashicorp.com/terraform/internals/debugging"
+      },
+      {
+        id: 49,
+        part: 2,
+        domain: "HCP Terraform Network Agents",
+        title: "In HCP Terraform / Enterprise, what component allows running managed executions against private infrastructure isolated inside VPCs without exposing public endpoints?",
+        code: "HCP Terraform (SaaS) <--- outbound TLS ---> HCP Terraform Agent (Private Subnet)",
+        options: [
+          "HCP Private Network Agent",
+          "AWS Direct Connect Gateway plugin",
+          "Vault Secrets Engine proxy",
+          "SSH Bastion Provisioner"
+        ],
+        correct: 0, // A
+        concept: "HCP Terraform Agents are lightweight worker binaries deployed inside private networks. They initiate outbound polling connections to HCP Terraform, receive execution workloads, and execute plan/apply against private resources without needing inbound firewall rules.",
+        distractor: "Option B, C, and D are unrelated infrastructure components.",
+        pitfall: "Ensure agent pools have sufficient memory and CPU resources, as running large plans on undersized agent container instances will result in out-of-memory worker crashes.",
+        docLink: "https://developer.hashicorp.com/terraform/cloud-docs/agents"
+      },
+      {
+        id: 50,
+        part: 2,
+        domain: "Complex Collection Transformations",
+        title: "Given a map of objects containing nested lists of subnets, which HCL expression converts the structure into a single flat list of object pairs suitable for `for_each` resource iteration?",
+        code: "variable \"vpcs\" {\n  default = {\n    vpc_a = { subnets = [\"10.0.1.0/24\", \"10.0.2.0/24\"] }\n    vpc_b = { subnets = [\"10.1.1.0/24\"] }\n  }\n}\n# Which expression flattens this nested structure?",
+        options: [
+          "flatten([\n  for vpc_key, vpc in var.vpcs :\n  [\n    for cidr in vpc.subnets :\n    { vpc = vpc_key, cidr = cidr }\n  ]\n])",
+          "concat(var.vpcs.*.subnets)",
+          "merge(var.vpcs)",
+          "tolist(var.vpcs)"
+        ],
+        correct: 0, // A
+        concept: "Combining nested `for` generator expressions with `flatten()` is the standard Terraform pattern for transforming nested maps/lists into a flat array of map objects for resource `for_each` consumption.",
+        distractor: "Option B uses obsolete legacy splat syntax that fails on maps. Option C only operates on top-level keys. Option D fails type conversion.",
+        pitfall: "Forgetting `flatten()` leaves you with a list of lists (`[[{...}], [{...}]]`), which `for_each` will reject because it requires a map or set of strings.",
+        docLink: "https://developer.hashicorp.com/terraform/language/functions/flatten"
+      }
+    ];
+
+    // STATE MANAGEMENT
+    let currentPart = 1;
+    let currentQuestionIndex = 0; // 0 to 24 relative to current part
+    let currentMode = 'practice'; // 'practice' or 'exam'
+    let showIncorrectOnly = false;
+    let timerInterval = null;
+    let examTimeRemaining = 45 * 60; // 45 minutes in seconds
+
+    // USER ANSWERS PERSISTENCE MATRIX
+    // Structure: { questionId: selectedOptionIndex }
+    let userAnswers = {};
+
+    // INITIALIZATION
+    window.onload = function() {
+      loadLocalStorage();
+      setupEventListeners();
+      renderQuiz();
+    };
+
+    function setupEventListeners() {
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowLeft') {
+          navigateQuestion(-1);
+        } else if (e.key === 'ArrowRight') {
+          navigateQuestion(1);
+        }
+      });
+    }
+
+    function loadLocalStorage() {
+      const savedAnswers = localStorage.getItem('tf_quiz_answers');
+      if (savedAnswers) {
+        try { userAnswers = JSON.parse(savedAnswers); } catch(e) {}
+      }
+
+      const savedMode = localStorage.getItem('tf_quiz_mode');
+      if (savedMode) { currentMode = savedMode; }
+
+      const savedTheme = localStorage.getItem('tf_quiz_theme');
+      if (savedTheme === 'light') {
+        document.documentElement.classList.remove('dark');
+        updateThemeIcon(false);
+      } else {
+        document.documentElement.classList.add('dark');
+        updateThemeIcon(true);
+      }
+    }
+
+    function saveLocalStorage() {
+      localStorage.setItem('tf_quiz_answers', JSON.stringify(userAnswers));
+      localStorage.setItem('tf_quiz_mode', currentMode);
+      localStorage.setItem('tf_quiz_theme', document.documentElement.classList.contains('dark') ? 'dark' : 'light');
+    }
+
+    // THEME MANAGEMENT
+    function toggleTheme() {
+      const isDark = document.documentElement.classList.toggle('dark');
+      updateThemeIcon(isDark);
+      saveLocalStorage();
+    }
+
+    function updateThemeIcon(isDark) {
+      const icon = document.getElementById('themeIcon');
+      if (isDark) {
+        icon.className = 'fa-solid fa-sun text-amber-400 text-sm';
+      } else {
+        icon.className = 'fa-solid fa-moon text-indigo-600 text-sm';
+      }
+    }
+
+    // MODE MANAGEMENT (PRACTICE VS EXAM)
+    function setMode(mode) {
+      currentMode = mode;
+      const practiceBtn = document.getElementById('modePracticeBtn');
+      const examBtn = document.getElementById('modeExamBtn');
+      const timerDisplay = document.getElementById('examTimer');
+
+      if (mode === 'practice') {
+        practiceBtn.className = 'px-3 py-1.5 rounded-md font-medium transition-all flex items-center gap-1.5 bg-indigo-600 text-white shadow-sm';
+        examBtn.className = 'px-3 py-1.5 rounded-md font-medium transition-all flex items-center gap-1.5 text-slate-400 hover:text-white';
+        timerDisplay.classList.add('hidden');
+        timerDisplay.classList.remove('flex');
+        clearInterval(timerInterval);
+      } else {
+        examBtn.className = 'px-3 py-1.5 rounded-md font-medium transition-all flex items-center gap-1.5 bg-indigo-600 text-white shadow-sm';
+        practiceBtn.className = 'px-3 py-1.5 rounded-md font-medium transition-all flex items-center gap-1.5 text-slate-400 hover:text-white';
+        timerDisplay.classList.remove('hidden');
+        timerDisplay.classList.add('flex');
+        startTimer();
+      }
+      saveLocalStorage();
+      renderQuestion();
+    }
+
+    function startTimer() {
+      clearInterval(timerInterval);
+      timerInterval = setInterval(() => {
+        examTimeRemaining--;
+        if (examTimeRemaining <= 0) {
+          clearInterval(timerInterval);
+          alert("Exam time has expired! Submitting assessment.");
+          openResultsModal();
+        }
+        updateTimerDisplay();
+      }, 1000);
+    }
+
+    function updateTimerDisplay() {
+      const minutes = Math.floor(examTimeRemaining / 60);
+      const seconds = examTimeRemaining % 60;
+      document.getElementById('timerCountdown').innerText = 
+        `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    }
+
+    // TAB SWITCHING
+    function switchTab(partNum) {
+      currentPart = partNum;
+      currentQuestionIndex = 0;
+
+      const tab1 = document.getElementById('tab1Btn');
+      const tab2 = document.getElementById('tab2Btn');
+      const gridLabel = document.getElementById('gridPartLabel');
+
+      if (partNum === 1) {
+        tab1.className = 'px-4 py-2.5 font-semibold text-sm rounded-t-lg border-b-2 transition flex items-center gap-2 border-indigo-500 text-indigo-400 bg-slate-800/60';
+        tab2.className = 'px-4 py-2.5 font-semibold text-sm rounded-t-lg border-b-2 transition flex items-center gap-2 border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-800/30';
+        gridLabel.innerText = "Part 1 (Q1-25)";
+      } else {
+        tab2.className = 'px-4 py-2.5 font-semibold text-sm rounded-t-lg border-b-2 transition flex items-center gap-2 border-indigo-500 text-indigo-400 bg-slate-800/60';
+        tab1.className = 'px-4 py-2.5 font-semibold text-sm rounded-t-lg border-b-2 transition flex items-center gap-2 border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-800/30';
+        gridLabel.innerText = "Part 2 (Q26-50)";
+      }
+
+      renderQuiz();
+    }
+
+    // INCORRECT FILTER TOGGLE
+    function toggleIncorrectFilter() {
+      showIncorrectOnly = !showIncorrectOnly;
+      const btn = document.getElementById('incorrectFilterBtn');
+      const label = document.getElementById('filterBtnLabel');
+
+      if (showIncorrectOnly) {
+        btn.className = 'px-3 py-1.5 bg-rose-600 text-white border border-rose-500 rounded-lg text-xs font-bold flex items-center gap-2 transition shadow-md';
+        label.innerText = 'Filter: Only Missed';
+        // Jump to first incorrect question if available
+        const partQuestions = getPartQuestions();
+        const firstIncorrect = partQuestions.findIndex(q => userAnswers[q.id] !== undefined && userAnswers[q.id] !== q.correct);
+        if (firstIncorrect !== -1) {
+          currentQuestionIndex = firstIncorrect;
+        }
+      } else {
+        btn.className = 'px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 rounded-lg text-xs font-medium flex items-center gap-2 transition';
+        label.innerText = 'Show Only Incorrect';
+      }
+
+      renderQuiz();
+    }
+
+    // HELPER: GET CURRENT PART QUESTIONS
+    function getPartQuestions() {
+      return quizData.filter(q => q.part === currentPart);
+    }
+
+    // RENDER ENTIRE QUIZ VIEW
+    function renderQuiz() {
+      renderJumpGrid();
+      renderQuestion();
+      updateProgressStats();
+    }
+
+    // RENDER JUMP GRID
+    function renderJumpGrid() {
+      const gridContainer = document.getElementById('jumpGrid');
+      gridContainer.innerHTML = '';
+      const partQuestions = getPartQuestions();
+
+      partQuestions.forEach((q, idx) => {
+        const globalQNum = q.id;
+        const isAnswered = userAnswers[globalQNum] !== undefined;
+        const isCorrect = isAnswered && userAnswers[globalQNum] === q.correct;
+        const isCurrent = idx === currentQuestionIndex;
+
+        // Apply filter logic if active
+        const isIncorrect = isAnswered && !isCorrect;
+        if (showIncorrectOnly && !isIncorrect) {
+          // If filtering incorrect, dim/disable non-incorrect grid buttons
+        }
+
+        const btn = document.createElement('button');
+        btn.setAttribute('type', 'button');
+
+        let bgClass = 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700';
+
+        if (isAnswered) {
+          if (isCorrect) {
+            bgClass = 'bg-emerald-950 text-emerald-300 border-emerald-600/60 font-bold';
+          } else {
+            bgClass = 'bg-rose-950 text-rose-300 border-rose-600/60 font-bold';
+          }
+        }
+
+        if (isCurrent) {
+          bgClass += ' ring-2 ring-indigo-500 ring-offset-2 ring-offset-slate-900 font-extrabold';
+        }
+
+        btn.className = `py-2 rounded-lg border text-xs transition flex items-center justify-center font-mono ${bgClass}`;
+        btn.innerText = globalQNum < 10 ? `0${globalQNum}` : `${globalQNum}`;
+        btn.onclick = () => {
+          currentQuestionIndex = idx;
+          renderQuiz();
+        };
+
+        gridContainer.appendChild(btn);
+      });
+    }
+
+    // RENDER QUESTION CARD
+    function renderQuestion() {
+      const partQuestions = getPartQuestions();
+      if (partQuestions.length === 0) return;
+
+      const q = partQuestions[currentQuestionIndex];
+      const selectedOption = userAnswers[q.id];
+      const isAnswered = selectedOption !== undefined;
+
+      // Update Badges & Titles
+      document.getElementById('qNumberBadge').innerText = `Question ${q.id < 10 ? '0' + q.id : q.id} / 50`;
+      document.getElementById('qDomainBadge').innerText = q.domain;
+      document.getElementById('qTitle').innerText = q.title;
+
+      // Code Block Handling
+      const codeBlock = document.getElementById('qCodeBlock');
+      const codeElem = document.getElementById('qCode');
+      if (q.code && q.code.trim() !== '') {
+        codeElem.innerText = q.code;
+        codeBlock.classList.remove('hidden');
+      } else {
+        codeBlock.classList.add('hidden');
+      }
+
+      // Render Options
+      const optionsContainer = document.getElementById('optionsList');
+      optionsContainer.innerHTML = '';
+
+      const labels = ['A', 'B', 'C', 'D'];
+
+      q.options.forEach((optText, optIdx) => {
+        const optionBtn = document.createElement('button');
+        optionBtn.type = 'button';
+
+        let btnStyle = 'bg-slate-800/70 border-slate-700 text-slate-200 hover:border-slate-500 hover:bg-slate-800';
+        let badgeStyle = 'bg-slate-700 text-slate-300';
+
+        if (isAnswered) {
+          if (currentMode === 'practice') {
+            // Immediate Feedback
+            if (optIdx === q.correct) {
+              btnStyle = 'bg-emerald-950/80 border-emerald-500 text-emerald-200 font-semibold shadow-sm ring-1 ring-emerald-500';
+              badgeStyle = 'bg-emerald-600 text-white';
+            } else if (optIdx === selectedOption) {
+              btnStyle = 'bg-rose-950/80 border-rose-500 text-rose-200 shadow-sm ring-1 ring-rose-500';
+              badgeStyle = 'bg-rose-600 text-white';
+            } else {
+              btnStyle = 'bg-slate-800/40 border-slate-800 text-slate-500 opacity-60';
+              badgeStyle = 'bg-slate-800 text-slate-600';
+            }
+          } else {
+            // Exam mode: highlight selected option neutrally
+            if (optIdx === selectedOption) {
+              btnStyle = 'bg-indigo-950 border-indigo-500 text-indigo-200 font-semibold shadow-sm ring-1 ring-indigo-500';
+              badgeStyle = 'bg-indigo-600 text-white';
+            }
+          }
+        }
+
+        optionBtn.className = `w-full text-left p-4 rounded-xl border transition flex items-start space-x-3.5 ${btnStyle}`;
+        optionBtn.onclick = () => selectOption(q.id, optIdx);
+
+        optionBtn.innerHTML = `
+          <span class="px-2.5 py-1 rounded-md text-xs font-mono font-bold shrink-0 mt-0.5 ${badgeStyle}">
+            ${labels[optIdx]}
+          </span>
+          <span class="text-sm leading-relaxed font-mono whitespace-pre-wrap">${escapeHtml(optText)}</span>
+        `;
+
+        optionsContainer.appendChild(optionBtn);
+      });
+
+      // Navigation Buttons state
+      document.getElementById('prevBtn').disabled = currentQuestionIndex === 0;
+      document.getElementById('nextBtn').disabled = currentQuestionIndex === partQuestions.length - 1;
+
+      // Explanation Box
+      const explanationCard = document.getElementById('explanationCard');
+      if (isAnswered && (currentMode === 'practice')) {
+        document.getElementById('expConcept').innerText = q.concept;
+        document.getElementById('expDistractor').innerText = q.distractor;
+        document.getElementById('expPitfall').innerText = q.pitfall;
+        document.getElementById('expDocLink').href = q.docLink;
+        explanationCard.classList.remove('hidden');
+      } else {
+        explanationCard.classList.add('hidden');
+      }
+    }
+
+    function escapeHtml(text) {
+      return text
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    // OPTION SELECTION
+    function selectOption(qId, optionIdx) {
+      userAnswers[qId] = optionIdx;
+      saveLocalStorage();
+      renderQuiz();
+    }
+
+    // NAVIGATION
+    function navigateQuestion(direction) {
+      const partQuestions = getPartQuestions();
+      let newIdx = currentQuestionIndex + direction;
+
+      if (showIncorrectOnly) {
+        // Find next incorrect question in this direction
+        while (newIdx >= 0 && newIdx < partQuestions.length) {
+          const q = partQuestions[newIdx];
+          const isAnswered = userAnswers[q.id] !== undefined;
+          const isIncorrect = isAnswered && userAnswers[q.id] !== q.correct;
+          if (isIncorrect) break;
+          newIdx += direction;
+        }
+      }
+
+      if (newIdx >= 0 && newIdx < partQuestions.length) {
+        currentQuestionIndex = newIdx;
+        renderQuiz();
+      }
+    }
+
+    // UPDATE PROGRESS STATS BAR
+    function updateProgressStats() {
+      const partQuestions = getPartQuestions();
+      let correct = 0;
+      let incorrect = 0;
+      let unanswered = 0;
+
+      partQuestions.forEach(q => {
+        const ans = userAnswers[q.id];
+        if (ans === undefined) {
+          unanswered++;
+        } else if (ans === q.correct) {
+          correct++;
+        } else {
+          incorrect++;
+        }
+      });
+
+      const total = partQuestions.length;
+      const progressPct = Math.round(((correct + incorrect) / total) * 100);
+
+      document.getElementById('correctCount').innerText = correct;
+      document.getElementById('incorrectCount').innerText = incorrect;
+      document.getElementById('unansweredCount').innerText = unanswered;
+      document.getElementById('progressBar').style.width = `${progressPct}%`;
+      document.getElementById('progressText').innerText = `${progressPct}%`;
+    }
+
+    // RESET PART
+    function resetCurrentPart() {
+      if (confirm(`Are you sure you want to reset all answers for Part ${currentPart}?`)) {
+        const partQuestions = getPartQuestions();
+        partQuestions.forEach(q => {
+          delete userAnswers[q.id];
+        });
+        saveLocalStorage();
+        currentQuestionIndex = 0;
+        renderQuiz();
+      }
+    }
+
+    // RESULTS MODAL
+    function openResultsModal() {
+      const partQuestions = getPartQuestions();
+      let correct = 0;
+      let incorrect = 0;
+      let unanswered = 0;
+
+      const domainStats = {};
+
+      partQuestions.forEach(q => {
+        const ans = userAnswers[q.id];
+        if (!domainStats[q.domain]) {
+          domainStats[q.domain] = { total: 0, correct: 0 };
+        }
+        domainStats[q.domain].total++;
+
+        if (ans === undefined) {
+          unanswered++;
+        } else if (ans === q.correct) {
+          correct++;
+          domainStats[q.domain].correct++;
+        } else {
+          incorrect++;
+        }
+      });
+
+      const total = partQuestions.length;
+      const scorePct = Math.round((correct / total) * 100);
+
+      document.getElementById('modalPartSubtitle').innerText = 
+        currentPart === 1 ? "Part 1: Core Architecture & Refactoring (Q1-25)" : "Part 2: Advanced State, Plugins & Enterprise (Q26-50)";
+
+      document.getElementById('modalScorePct').innerText = `${scorePct}%`;
+      document.getElementById('modalCorrectNum').innerText = `${correct} / ${total}`;
+      document.getElementById('modalIncorrectNum').innerText = `${incorrect}`;
+
+      const badge = document.getElementById('modalStatusBadge');
+      if (scorePct >= 75) {
+        badge.innerText = "PASSED (Threshold: 75%)";
+        badge.className = "inline-block px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider mb-1 bg-emerald-950 text-emerald-400 border border-emerald-600/40";
+      } else {
+        badge.innerText = "FAILED (Threshold: 75%)";
+        badge.className = "inline-block px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider mb-1 bg-rose-950 text-rose-400 border border-rose-600/40";
+      }
+
+      // Render Domain Breakdown
+      const domainContainer = document.getElementById('domainBreakdown');
+      domainContainer.innerHTML = '';
+
+      Object.keys(domainStats).forEach(dom => {
+        const stat = domainStats[dom];
+        const pct = Math.round((stat.correct / stat.total) * 100);
+
+        const row = document.createElement('div');
+        row.className = "bg-slate-800/40 p-2.5 rounded-lg border border-slate-700/40 flex items-center justify-between";
+        row.innerHTML = `
+          <span class="text-slate-300 font-medium">${dom}</span>
+          <div class="flex items-center space-x-3">
+            <span class="text-slate-400 font-mono">${stat.correct}/${stat.total}</span>
+            <span class="font-bold font-mono ${pct >= 75 ? 'text-emerald-400' : 'text-rose-400'}">${pct}%</span>
+          </div>
+        `;
+        domainContainer.appendChild(row);
+      });
+
+      document.getElementById('resultsModal').classList.remove('hidden');
+    }
+
+    function closeResultsModal() {
+      document.getElementById('resultsModal').classList.add('hidden');
+    }
+
+    function reviewIncorrectFromModal() {
+      closeResultsModal();
+      if (!showIncorrectOnly) {
+        toggleIncorrectFilter();
+      }
+    }
+  </script>
+</body>
+</html>

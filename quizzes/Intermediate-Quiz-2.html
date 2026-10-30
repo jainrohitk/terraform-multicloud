@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Terraform Intermediate Quiz — Review Mode</title>
+<style>
+  :root {
+    --bg: #f6f5f2;
+    --bg-panel: #ffffff;
+    --bg-inset: #efeee9;
+    --text: #201f1c;
+    --text-dim: #6b6a64;
+    --border: #ddd9d0;
+    --accent: #5c4ee5;
+    --accent-text: #ffffff;
+    --correct: #1f7a4d;
+    --correct-bg: #e3f3e8;
+    --incorrect: #b3401f;
+    --incorrect-bg: #fbe9e2;
+    --unanswered: #c9c5b9;
+    --mono: 'SF Mono', 'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace;
+    --sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, Roboto, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #16151a;
+      --bg-panel: #1f1e24;
+      --bg-inset: #26252c;
+      --text: #ece9e2;
+      --text-dim: #9b988f;
+      --border: #35333c;
+      --accent: #9d8dff;
+      --accent-text: #16151a;
+      --correct: #6fd39a;
+      --correct-bg: #1c3327;
+      --incorrect: #ff9075;
+      --incorrect-bg: #3a2018;
+      --unanswered: #45434c;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #16151a; --bg-panel: #1f1e24; --bg-inset: #26252c; --text: #ece9e2; --text-dim: #9b988f;
+    --border: #35333c; --accent: #9d8dff; --accent-text: #16151a; --correct: #6fd39a; --correct-bg: #1c3327;
+    --incorrect: #ff9075; --incorrect-bg: #3a2018; --unanswered: #45434c;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font-family: var(--sans); line-height: 1.5; padding: 20px 16px 60px; }
+  .wrap { max-width: 880px; margin: 0 auto; }
+  header { margin-bottom: 20px; }
+  h1 { font-size: 1.4rem; margin: 0 0 4px; letter-spacing: -0.01em; }
+  .subtitle { color: var(--text-dim); font-size: 0.9rem; margin: 0; }
+  .part-tabs { display: flex; gap: 6px; margin-top: 14px; }
+  .part-tab { flex: 1; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--border); background: var(--bg-panel); color: var(--text); cursor: pointer; font-size: 0.85rem; font-family: var(--sans); text-align: center; }
+  .part-tab.active { background: var(--accent); color: var(--accent-text); border-color: var(--accent); font-weight: 600; }
+  .score-bar { display: flex; align-items: center; gap: 14px; background: var(--bg-panel); border: 1px solid var(--border); border-radius: 12px; padding: 12px 16px; margin-top: 14px; font-size: 0.85rem; flex-wrap: wrap; }
+  .score-bar .stat { display: flex; align-items: center; gap: 6px; }
+  .dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+  .dot.correct { background: var(--correct); }
+  .dot.incorrect { background: var(--incorrect); }
+  .dot.unanswered { background: var(--unanswered); }
+  .score-bar .fill-spacer { flex: 1; }
+  .filter-btn { border: 1px solid var(--border); background: var(--bg-inset); color: var(--text); padding: 6px 12px; border-radius: 8px; font-size: 0.78rem; cursor: pointer; font-family: var(--sans); }
+  .filter-btn.active { background: var(--incorrect); color: white; border-color: var(--incorrect); }
+  .reset-btn { border: 1px solid var(--border); background: transparent; color: var(--text-dim); padding: 6px 12px; border-radius: 8px; font-size: 0.78rem; cursor: pointer; font-family: var(--sans); }
+  .view-results-btn { border: 1px solid var(--correct); background: var(--correct-bg); color: var(--correct); padding: 6px 12px; border-radius: 8px; font-size: 0.78rem; cursor: pointer; font-family: var(--sans); }
+  .grid-panel { background: var(--bg-panel); border: 1px solid var(--border); border-radius: 12px; padding: 14px; margin-top: 14px; }
+  .grid-label { font-size: 0.75rem; color: var(--text-dim); margin-bottom: 8px; }
+  .qgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(34px, 1fr)); gap: 6px; }
+  .qbtn { aspect-ratio: 1; border-radius: 7px; border: 1px solid var(--border); background: var(--bg-inset); color: var(--text-dim); font-family: var(--mono); font-size: 0.72rem; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0; }
+  .qbtn.correct { background: var(--correct-bg); color: var(--correct); border-color: var(--correct); }
+  .qbtn.incorrect { background: var(--incorrect-bg); color: var(--incorrect); border-color: var(--incorrect); }
+  .qbtn.current { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .qgrid.filtered .qbtn.dimmed { opacity: 0.25; pointer-events: none; }
+  .qcard { background: var(--bg-panel); border: 1px solid var(--border); border-radius: 14px; padding: 22px; margin-top: 16px; }
+  .qmeta { font-family: var(--mono); font-size: 0.78rem; color: var(--text-dim); margin-bottom: 8px; }
+  .qtext { font-size: 1.08rem; font-weight: 600; margin: 0 0 18px; }
+  .options { display: flex; flex-direction: column; gap: 8px; }
+  .option { text-align: left; padding: 12px 14px; border-radius: 10px; border: 1px solid var(--border); background: var(--bg-inset); color: var(--text); cursor: pointer; font-family: var(--sans); font-size: 0.92rem; display: flex; gap: 10px; align-items: flex-start; }
+  .option .letter { font-family: var(--mono); font-size: 0.78rem; color: var(--text-dim); border: 1px solid var(--border); border-radius: 5px; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+  .option.picked-correct { background: var(--correct-bg); border-color: var(--correct); }
+  .option.picked-correct .letter { border-color: var(--correct); color: var(--correct); }
+  .option.picked-incorrect { background: var(--incorrect-bg); border-color: var(--incorrect); }
+  .option.picked-incorrect .letter { border-color: var(--incorrect); color: var(--incorrect); }
+  .option.reveal-correct { border-color: var(--correct); }
+  .option:disabled { cursor: default; }
+  .feedback { margin-top: 16px; padding: 14px; border-radius: 10px; font-size: 0.88rem; }
+  .feedback.correct { background: var(--correct-bg); color: var(--correct); }
+  .feedback.incorrect { background: var(--incorrect-bg); color: var(--incorrect); }
+  .feedback .explain { color: var(--text); margin-top: 6px; opacity: 0.9; }
+  .nav-row { display: flex; justify-content: space-between; margin-top: 18px; gap: 10px; }
+  .nav-btn { padding: 10px 18px; border-radius: 10px; border: 1px solid var(--border); background: var(--bg-inset); color: var(--text); cursor: pointer; font-size: 0.88rem; font-family: var(--sans); }
+  .nav-btn:disabled { opacity: 0.4; cursor: default; }
+  .nav-btn.primary { background: var(--accent); color: var(--accent-text); border-color: var(--accent); font-weight: 600; }
+  .nav-btn.submit { background: var(--correct); color: white; border-color: var(--correct); font-weight: 600; }
+  .empty-state { text-align: center; padding: 40px 20px; color: var(--text-dim); }
+  .empty-state .big { font-size: 2rem; margin-bottom: 8px; }
+  footer { text-align: center; margin-top: 24px; color: var(--text-dim); font-size: 0.78rem; }
+  .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.55); display: flex; align-items: center; justify-content: center; z-index: 50; padding: 20px; }
+  .results-card { background: var(--bg-panel); border: 1px solid var(--border); border-radius: 16px; padding: 28px; max-width: 440px; width: 100%; text-align: center; }
+  .results-card .score-big { font-size: 2.6rem; font-weight: 700; margin: 6px 0 2px; }
+  .results-card .score-label { color: var(--text-dim); font-size: 0.85rem; margin-bottom: 18px; }
+  .results-breakdown { display: flex; justify-content: center; gap: 18px; margin-bottom: 22px; font-size: 0.85rem; }
+  .results-breakdown .stat { display: flex; align-items: center; gap: 6px; }
+  .results-actions { display: flex; flex-direction: column; gap: 8px; }
+  .results-actions .nav-btn { width: 100%; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Terraform Intermediate Quiz — Review Mode</h1>
+    <p class="subtitle">60 questions, intermediate level. Click any question number to jump directly to it.</p>
+    <div class="part-tabs">
+      <button class="part-tab active" id="tab1" onclick="switchPart(1)">Part 1 · Q1–30</button>
+      <button class="part-tab" id="tab2" onclick="switchPart(2)">Part 2 · Q31–60</button>
+    </div>
+  </header>
+  <div class="score-bar" id="scoreBar"></div>
+  <div class="grid-panel">
+    <div class="grid-label" id="gridLabel">All questions — click to jump</div>
+    <div class="qgrid" id="qgrid"></div>
+  </div>
+  <div id="qcardHolder"></div>
+  <footer>Progress is saved in this browser automatically.</footer>
+</div>
+
+<script>
+const DATA = {
+  1: [
+    {q:"Two resources reference each other via attributes, creating a dependency Terraform can't resolve. What happens?", o:["Terraform reports a dependency cycle error and refuses to plan","Terraform picks one arbitrarily and applies it first","Terraform silently ignores the second reference","Terraform creates both resources in parallel regardless"], a:0, e:"Circular dependencies between resources are detected and reported as an error before planning proceeds."},
+    {q:"How do you safely ignore drift on a specific attribute (e.g., an autoscaling group's desired_count) changed outside Terraform?", o:["Remove the attribute from state manually","Add a lifecycle block with ignore_changes = [attribute]","Use terraform refresh -target","Mark the attribute as sensitive"], a:1, e:"lifecycle.ignore_changes tells Terraform to stop treating out-of-band changes to that attribute as drift."},
+    {q:"What's the difference between local-exec and remote-exec regarding connection blocks?", o:["local-exec requires a connection block; remote-exec does not", "Both always require a connection block", "remote-exec requires a connection block (SSH/WinRM) to reach the resource; local-exec does not", "Neither ever needs a connection block"], a:2, e:"remote-exec runs on the provisioned resource and needs connection details; local-exec runs on the machine running Terraform."},
+    {q:"In a for_each loop over a map, what does each.key represent?", o:["The numeric index of the iteration", "The resource's unique cloud ID", "The full map itself", "The map key for the current iteration"], a:3, e:"each.key is the current map key; each.value is the corresponding value."},
+    {q:"What's the risk of switching an existing resource from count to for_each (or vice versa)?", o:["Terraform may plan a destroy and recreate, since resource addresses (index vs key) change", "Nothing changes; Terraform automatically migrates the addresses", "Only the state file needs to be deleted, no plan changes", "Terraform blocks the switch entirely with an error"], a:0, e:"Because the addressing scheme differs, Terraform sees old and new instances as different resources unless you use moved blocks or state mv."},
+    {q:"What does a 'moved' block (Terraform 1.1+) do?", o:["It physically moves resources between cloud regions", "It tells Terraform a resource's address changed, so it updates state instead of destroying/recreating it", "It moves a module's source location automatically", "It merges two separate state files together"], a:1, e:"moved blocks let you refactor resource/module addresses in code while preserving the underlying infrastructure."},
+    {q:"What is the purpose of a precondition/postcondition block (custom conditions, Terraform 1.2+)?", o:["To automatically fix invalid configuration values", "To document code without affecting execution", "To validate assumptions or guarantees at plan/apply time, failing early with a custom error message", "To enforce billing limits on a resource"], a:2, e:"Custom conditions catch invalid assumptions before they cause confusing downstream errors."},
+    {q:"Which construct lets you fetch outputs from another Terraform state file/backend?", o:["terraform_output resource", "remote_state provider", "state_import block", "terraform_remote_state data source"], a:3, e:"terraform_remote_state reads outputs from a separately managed state, enabling cross-stack references."},
+    {q:"What does a splat expression like aws_instance.web[*].id return?", o:["A list of the given attribute across all instances", "Only the first instance's attribute", "A map keyed by instance ID", "A single concatenated string of all values"], a:0, e:"Splat expressions collect an attribute from every instance of a resource into a list."},
+    {q:"Which function provides a fallback value if an expression might error (e.g., a missing map key)?", o:["fallback()", "try()", "coalesce_error()", "safe()"], a:1, e:"try() evaluates a list of expressions and returns the first one that doesn't produce an error."},
+    {q:"What is the purpose of templatefile()?", o:["Downloads a file template from the Terraform Registry", "Creates a new .tf file from a template automatically", "Renders a template file, substituting given variables into it", "Validates a file against a JSON schema"], a:2, e:"templatefile(path, vars) is commonly used for cloud-init scripts, config files, etc."},
+    {q:"What is a null_resource typically used for?", o:["To explicitly represent infrastructure Terraform should ignore", "To reserve a resource name for future use", "To delete null values from state", "As a placeholder to trigger provisioners or logic not tied to a real infrastructure resource"], a:3, e:"null_resource is commonly paired with triggers and provisioners for actions with no direct cloud resource."},
+    {q:"What is terraform_data (introduced in Terraform 1.4)?", o:["A built-in resource that replaces many null_resource use cases with more explicit intent", "A resource used only for storing null values in state", "A deprecated alias for null_resource", "A resource exclusive to Terraform Cloud"], a:0, e:"terraform_data gives more explicit semantics for trigger-based workflows than the older null_resource pattern."},
+    {q:"What does the 'import' block (Terraform 1.5+) let you do?", o:["Importing entire modules from the public registry", "Declaratively importing existing resources into state as part of a plan/apply, instead of the CLI import command", "Importing variable values from a .tfvars file", "Importing state from a different backend automatically"], a:1, e:"The import block lets import be reviewed as part of a normal plan, rather than run imperatively via CLI."},
+    {q:"What do 'check' blocks (Terraform 1.5+) allow you to do?", o:["Validate syntax before terraform init", "Check for available provider updates", "Lock state during a run", "Run non-blocking assertions about infrastructure health after apply, without failing the whole run"], a:3, e:"check blocks surface warnings about assumptions without blocking the apply itself."},
+    {q:"What does the 'nullable' argument on a variable block control?", o:["Marks the variable as required with no default", "Hides the variable's value from output", "Restricts the variable to numeric types only", "Allows the variable to explicitly accept a null value"], a:3, e:"By default variables are nullable; setting nullable = false forces a non-null value."},
+    {q:"What does 'terraform fmt -check' do?", o:["Reports files that aren't correctly formatted, without modifying them", "Automatically reformats every file in place", "Validates HCL syntax only, ignoring formatting", "Checks formatting only inside modules, not the root"], a:0, e:"This mode is commonly used in CI to fail a build if code isn't properly formatted."},
+    {q:"Which command outputs a plan in machine-readable JSON (useful for policy checks or drift tooling)?", o:["terraform plan --json", "terraform show -json <planfile>", "terraform output -json", "terraform state show --json"], a:1, e:"terraform show -json converts a saved plan (or state) into a structured JSON representation."},
+    {q:"What's a common way to lock remote state stored in S3 (pre-native S3 locking)?", o:["Using an S3 bucket policy alone", "Using IAM roles exclusively", "Using a DynamoDB table for state locking", "Using a local .lock file synced via S3"], a:2, e:"A DynamoDB table with a lock ID column is the traditional pattern for S3 backend locking."},
+    {q:"When migrating from a local to a remote backend, what typically reconfigures the backend and offers to copy state?", o:["terraform state push --migrate", "terraform backend migrate", "terraform apply -backend-config", "terraform init, which detects the backend change and offers to copy existing state"], a:3, e:"terraform init handles backend changes interactively, including offering a state migration."},
+    {q:"What does ${terraform.workspace} let you reference inside a configuration?", o:["The name of the currently selected workspace, to vary naming/config per workspace", "The Terraform CLI version currently installed", "The current backend type", "The last applied plan's timestamp"], a:0, e:"This is commonly used to prefix resource names or pick environment-specific values per workspace."},
+    {q:"What's the main risk of using count with a list whose order can change?", o:["Terraform automatically re-sorts the list to prevent issues", "Resources can be destroyed and recreated unexpectedly as their index shifts", "Nothing changes since count doesn't track order", "It causes a permanent state lock"], a:1, e:"Because count uses numeric indices, reordering the underlying list shifts which resource maps to which index."},
+    {q:"Which expression syntax transforms a list/map inline, e.g. [for x in list : x.name]?", o:["a 'loop' block", "a 'map' function only", "a 'for' expression", "a 'foreach' statement"], a:2, e:"For expressions are Terraform's inline way to transform collections."},
+    {q:"What does an optional() wrapper achieve inside an object type constraint?", o:["Marks a resource as optional to create", "Allows a provider to be optionally installed", "Marks an entire module as optional in a for_each", "Marks an attribute in an object type as optional, optionally with a default value"], a:3, e:"optional() lets object-typed variables have attributes that callers may omit."},
+    {q:"What does the TF_VAR_ prefix on an environment variable do?", o:["Enables verbose variable debugging output", "Sets the value of a Terraform input variable matching the name after the prefix", "Marks a variable as sensitive automatically", "Overrides the backend configuration"], a:1, e:"TF_VAR_region=us-east-1 sets the 'region' input variable, for example."},
+    {q:"What is the purpose of the 'external' data source?", o:["Fetches data exclusively from public APIs over HTTPS", "Imports resources from an external Terraform workspace", "Runs an external program and uses its JSON output as data within Terraform", "Validates external network connectivity before apply"], a:2, e:"The external provider is an escape hatch for pulling in data via an arbitrary script."},
+    {q:"Why might you enable a provider plugin cache directory locally?", o:["To store secrets used by providers", "To cache the state file locally for faster access", "To avoid re-downloading the same provider binaries for every project, speeding up terraform init", "To enable fully offline mode with no internet ever needed"], a:2, e:"The plugin cache avoids redundant downloads across multiple projects using the same provider version."},
+    {q:"Which environment variable enables detailed Terraform debug logging?", o:["TF_DEBUG", "TERRAFORM_VERBOSE", "TF_TRACE", "TF_LOG"], a:3, e:"TF_LOG (set to TRACE, DEBUG, INFO, WARN, or ERROR) controls Terraform's internal logging verbosity."},
+    {q:"Why should a team version-control the .terraform.lock.hcl file?", o:["It's required for terraform to run at all", "It stores the team's shared secrets", "It replaces the need for a .gitignore file", "Ensures every team member and CI pipeline uses identical provider versions/checksums"], a:3, e:"Without committing the lock file, different runs could resolve slightly different provider versions."},
+    {q:"What's a valid reason to prefer for_each over count when creating similar resources?", o:["for_each is always faster to execute than count", "for_each ties instances to stable keys, so removing a middle item doesn't shift/recreate unrelated resources", "for_each doesn't require unique keys", "count cannot be used inside modules at all"], a:1, e:"Keyed iteration avoids the index-shifting problem that count has when the underlying collection changes."}
+  ],
+  2: [
+    {q:"Why maintain separate .tfvars files per environment (dev.tfvars, prod.tfvars)?", o:["To physically separate state files, with no other benefit", "To bypass the need for a backend configuration", "To pass different variable values per environment while reusing the same configuration", "To allow each environment to use a different HCL syntax version"], a:2, e:"Separate .tfvars files keep one shared configuration while customizing values per environment."},
+    {q:"What does 'terraform workspace show' do?", o:["Lists all workspaces and their resource counts", "Shows the state file contents of a workspace", "Displays billing information per workspace", "Prints the name of the currently selected workspace"], a:3, e:"It's a quick way to confirm which workspace context you're currently operating in."},
+    {q:"In a multi-region setup using provider aliases, how do you pass the aliased provider into a child module?", o:["Using the 'providers' argument in the module block to map the alias to the module's expected provider", "Aliases are inherited automatically with no configuration needed", "By duplicating the provider block inside the child module", "Provider aliases cannot be passed into modules"], a:0, e:"The providers map argument explicitly wires a parent alias to the provider name the module expects."},
+    {q:"Why export module outputs and re-expose them at the root level?", o:["It's required for the module to apply successfully", "To reduce the module's overall resource count", "To make values computed within a module available to other modules or as final config outputs", "To bypass state locking for that module"], a:2, e:"Root-level outputs are how you surface useful values computed inside a module."},
+    {q:"What's a key risk of storing state locally in a team setting?", o:["Local state is always encrypted, unlike remote state", "Local state automatically syncs across machines", "There is no risk; local state is recommended for teams", "No shared state means team members can conflict or overwrite each other's changes without a lock"], a:3, e:"Remote backends with locking exist specifically to prevent this kind of collision."},
+    {q:"What does enabling S3 bucket versioning for a remote state bucket protect against?", o:["Speeds up terraform plan execution", "Automatically encrypts secrets within the state", "Enables multi-region replication of resources", "Accidental state corruption or deletion, by keeping prior versions recoverable"], a:3, e:"Versioning lets you roll back to a previous state file if something goes wrong."},
+    {q:"What's a benefit of running 'terraform plan' as part of a pull request check in CI?", o:["It automatically applies the changes once the PR is opened", "It replaces the need for code review entirely", "It only checks HCL syntax, not actual infrastructure impact", "Reviewers can see the exact infrastructure impact before merging, catching unintended changes"], a:3, e:"Plan-on-PR is a standard safeguard against merging changes with unreviewed infrastructure impact."},
+    {q:"What happens to the 'sensitive' marking on an output when it's referenced by another module?", o:["Sensitivity is lost once passed to another module", "The value is automatically encrypted at rest in state", "It prevents the value from being used at all downstream", "The value stays marked sensitive as it propagates, hiding it from plan/apply output at every level"], a:3, e:"Sensitivity propagates through references so it doesn't leak into logs downstream."},
+    {q:"What's the purpose of a data block referencing a remote Terraform Cloud/HCP workspace's outputs?", o:["To trigger a run in another workspace remotely", "To copy an entire state file into the current workspace", "To read outputs from another Terraform run/workspace for cross-stack references", "To validate that two workspaces use the same provider versions"], a:2, e:"This is the standard pattern for splitting infrastructure into layered, cross-referencing stacks."},
+    {q:"When running Terraform non-interactively in CI/CD, which approach avoids Terraform prompting for approval?", o:["-no-prompt", "-ci-mode", "-skip-confirm", "-auto-approve (with plan/apply), or applying a pre-generated plan file"], a:3, e:"Automated pipelines typically use -auto-approve or apply a saved plan file to avoid interactive prompts."},
+    {q:"What's the key difference between 'terraform plan -destroy' and 'terraform destroy'?", o:["They are functionally identical commands", "plan -destroy deletes state; terraform destroy deletes infrastructure only", "terraform destroy requires a saved plan file, plan -destroy does not", "plan -destroy only previews what would be destroyed; terraform destroy actually executes it"], a:3, e:"plan -destroy is a safe, read-only preview of a destroy operation."},
+    {q:"What practice best avoids state file conflicts when multiple people run Terraform?", o:["Committing state files to Git with frequent small commits", "Disabling state entirely and using -target for everything", "Having each team member keep their own separate local state", "Using a remote backend with locking instead of committing local state to version control"], a:3, e:"Remote backends with locking are the standard way to coordinate concurrent Terraform runs safely."},
+    {q:"What does 'terraform init -upgrade' do?", o:["Upgrades the Terraform CLI binary itself", "Migrates state to a newer state file format only", "Re-downloads only the root module, ignoring child modules", "Upgrades provider and module versions to the latest allowed by version constraints"], a:3, e:"It re-resolves and updates dependencies within the bounds set by your version constraints."},
+    {q:"A resource is removed from configuration but still present in state. What happens if you don't run an apply?", o:["It's destroyed immediately upon saving the file", "Terraform automatically re-adds it to configuration", "It becomes permanently orphaned and untrackable", "Nothing changes yet in real infrastructure — the next apply will mark it for destruction"], a:3, e:"A plan will show the pending destroy, but nothing actually happens until you apply."},
+    {q:"What does count.index reference inside a resource using count?", o:["The total number of resources created", "The resource's unique cloud-assigned ID", "The position of the resource in the state file only", "The current iteration's numeric index, usable for naming or configuration"], a:3, e:"count.index is commonly interpolated into names or config values that need to vary per instance."},
+    {q:"When for_each iterates over a set created with toset(list), what does each.value equal?", o:["It's always empty for sets, unlike maps", "It returns the numeric index instead", "It returns a list of all elements, not just the current one", "It equals the current set element itself (same as each.key for a set)"], a:3, e:"For a set, each.key and each.value are identical — both are the current element."},
+    {q:"What is the coalesce() function commonly used for?", o:["Merges multiple maps into a single combined map", "Concatenates a list of strings with a separator", "Converts a string to a number, erroring on failure", "Returns the first non-null value from a list of expressions, useful for fallback defaults"], a:3, e:"coalesce(a, b, c) is a common pattern for defaulting to the first available value."},
+    {q:"What does declaring a variable as a strict object({...}) type achieve compared to using 'any'?", o:["It allows any value to be passed, bypassing validation entirely", "It has no effect; 'any' and object types behave identically", "It only affects documentation, not actual validation", "Terraform validates the input matches the exact structure, catching misconfigurations earlier"], a:3, e:"Strict typing surfaces structural mistakes at plan time instead of causing confusing runtime errors."},
+    {q:"What's the recommended approach for many nearly identical resources spread across files?", o:["Copy-paste the resource block repeatedly with minor edits", "Use only count with no module structure", "Manually manage each one via terraform import each time", "Encapsulate them in a reusable module and instantiate it with different variables/for_each"], a:3, e:"Modules plus for_each keep repeated infrastructure DRY and consistent."},
+    {q:"Why might 'terraform apply' show changes even though you didn't modify any .tf files?", o:["This should never happen; it indicates a bug in Terraform", "It means the state file has been deleted", "It only happens right after terraform init", "Provider defaults, computed attributes, or drift in real infrastructure can cause plan differences"], a:3, e:"Real-world drift or provider-side changes can surface as a diff even without config edits."},
+    {q:"What's a downside of hardcoding an AWS account ID or region directly inside many resource blocks?", o:["It has no downside if the values never change", "It improves apply performance significantly", "It's required for most providers to function at all", "It makes the configuration less portable/reusable across accounts or regions"], a:3, e:"Variables or data sources keep configurations reusable across environments."},
+    {q:"What's the purpose of a 'validation' block inside a variable definition?", o:["Automatically corrects invalid input to a default value", "Encrypts the variable's value at rest", "Documents the variable without affecting plan/apply behavior", "Enforces custom rules on the variable's value, failing with a custom error message if violated"], a:3, e:"Validation blocks catch bad input early with a clear, custom error message."},
+    {q:"What does the -parallelism=N flag on terraform apply control?", o:["Sets the number of workspaces processed in parallel", "Limits the number of provider plugins loaded at once", "Controls how many state backups are kept", "How many resource operations Terraform executes concurrently"], a:3, e:"Lowering parallelism can help avoid rate-limiting from cloud provider APIs."},
+    {q:"What's the purpose of 'depends_on' specifically on a module block?", o:["Marks the module as deprecated for future runs", "Disables parallel execution for the entire configuration", "Automatically imports the module's remote state", "Forces the module's resources to wait on dependencies not captured through direct references"], a:3, e:"Same purpose as on a resource, but applied to everything inside the module as a unit."},
+    {q:"In Terraform Cloud / HCP Terraform, what is a 'run' typically composed of?", o:["A single terraform validate execution only", "A scheduled backup of the state file", "A billing cycle for workspace usage", "A plan followed by an (optionally approved) apply, executed remotely"], a:3, e:"Runs are the core execution unit for remote, collaborative Terraform workflows."},
+    {q:"What's the purpose of policy-as-code tools like Sentinel or OPA in a Terraform pipeline?", o:["To automatically write Terraform code from policy documents", "To replace the need for terraform plan entirely", "To manage provider authentication centrally", "To enforce organizational rules (cost limits, tagging, security) automatically before allowing an apply"], a:3, e:"Policy-as-code gates applies against rules the organization defines, independent of the code author."},
+    {q:"What does combining 'terraform state list' with grep help you do?", o:["Automatically delete resources matching a pattern", "Encrypt matching resources in state", "Generate a plan limited to matching resources", "Locate specific resource addresses in a large state file for further state commands"], a:3, e:"It's a quick way to find the exact address needed for a state mv/rm/show operation."},
+    {q:"Why might a team split a large Terraform codebase into multiple smaller state files (state isolation)?", o:["It's required by Terraform once a project exceeds 10 resources", "It removes the need for remote backends entirely", "It automatically improves security without any other changes", "It reduces blast radius, speeds up plan/apply, and limits state-locking impact on unrelated teams"], a:3, e:"Smaller, isolated states mean a mistake or a lock in one area doesn't block everyone else."},
+    {q:"What's the purpose of an alias in a provider block for a multi-account AWS setup?", o:["Renames the provider for display purposes only", "Enables a provider to manage multiple cloud vendors at once", "Is required for every provider, even single-account setups", "Lets you define multiple named provider configurations (e.g., per-account) usable by different resources/modules"], a:3, e:"Aliases are the standard way to target multiple accounts or regions with the same provider type."},
+    {q:"What's best practice when a 'terraform apply' partially fails midway (some resources created, others not)?", o:["Immediately delete the entire state file and start over", "Manually edit the .tf files until the error message disappears", "Switch to a different workspace and ignore the partial state", "Review the state (now partially updated) and re-run plan/apply to reconcile rather than manually deleting state"], a:3, e:"State accurately reflects what was actually created; re-running plan/apply is the safe path to reconcile."}
+  ]
+};
+
+let currentPart = 1;
+let currentIndex = 0;
+let showOnlyIncorrect = false;
+let showResults = false;
+let answers = { 1: {}, 2: {} };
+let submitted = { 1: false, 2: false };
+
+function loadState() {
+  try {
+    const saved = localStorage.getItem('tf_intermediate_quiz_state_v1');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      answers = parsed.answers || { 1: {}, 2: {} };
+      submitted = parsed.submitted || { 1: false, 2: false };
+    }
+  } catch (e) {}
+}
+function saveState() {
+  try { localStorage.setItem('tf_intermediate_quiz_state_v1', JSON.stringify({ answers, submitted })); } catch (e) {}
+}
+
+function switchPart(part) {
+  currentPart = part; currentIndex = 0; showOnlyIncorrect = false; showResults = false;
+  document.getElementById('tab1').classList.toggle('active', part === 1);
+  document.getElementById('tab2').classList.toggle('active', part === 2);
+  render();
+}
+
+function statusOf(part, idx) {
+  const rec = answers[part][idx];
+  if (!rec) return 'unanswered';
+  return rec.correct ? 'correct' : 'incorrect';
+}
+
+function renderScoreBar() {
+  const list = DATA[currentPart];
+  let correct = 0, incorrect = 0, unanswered = 0;
+  list.forEach((_, i) => {
+    const s = statusOf(currentPart, i);
+    if (s === 'correct') correct++; else if (s === 'incorrect') incorrect++; else unanswered++;
+  });
+  const bar = document.getElementById('scoreBar');
+  bar.innerHTML = `
+    <div class="stat"><span class="dot correct"></span>${correct} correct</div>
+    <div class="stat"><span class="dot incorrect"></span>${incorrect} incorrect</div>
+    <div class="stat"><span class="dot unanswered"></span>${unanswered} unanswered</div>
+    <div class="fill-spacer"></div>
+    ${submitted[currentPart] ? `<button class="view-results-btn" onclick="openResults()">View results</button>` : ''}
+    <button class="filter-btn ${showOnlyIncorrect ? 'active' : ''}" onclick="toggleFilter()">${showOnlyIncorrect ? 'Showing incorrect only' : 'Show only incorrect'}</button>
+    <button class="reset-btn" onclick="resetPart()">Reset part</button>
+  `;
+}
+
+function toggleFilter() {
+  showOnlyIncorrect = !showOnlyIncorrect;
+  if (showOnlyIncorrect) {
+    const list = DATA[currentPart];
+    const firstWrong = list.findIndex((_, i) => statusOf(currentPart, i) === 'incorrect');
+    if (firstWrong !== -1) currentIndex = firstWrong;
+  }
+  render();
+}
+
+function resetPart() {
+  if (!confirm('Reset all answers for this part?')) return;
+  answers[currentPart] = {}; submitted[currentPart] = false; showResults = false;
+  saveState(); currentIndex = 0; render();
+}
+
+function renderGrid() {
+  const list = DATA[currentPart];
+  const grid = document.getElementById('qgrid');
+  const label = document.getElementById('gridLabel');
+  label.textContent = showOnlyIncorrect ? 'Incorrect questions — click to jump' : 'All questions — click to jump';
+  grid.className = 'qgrid' + (showOnlyIncorrect ? ' filtered' : '');
+  grid.innerHTML = '';
+  list.forEach((_, i) => {
+    const status = statusOf(currentPart, i);
+    const btn = document.createElement('button');
+    btn.className = 'qbtn ' + status + (i === currentIndex ? ' current' : '') + (showOnlyIncorrect && status !== 'incorrect' ? ' dimmed' : '');
+    btn.textContent = i + 1;
+    btn.onclick = () => { currentIndex = i; render(); };
+    grid.appendChild(btn);
+  });
+}
+
+function pickAnswer(idx) {
+  const q = DATA[currentPart][currentIndex];
+  const correct = idx === q.a;
+  answers[currentPart][currentIndex] = { picked: idx, correct };
+  saveState(); render();
+}
+
+function renderQCard() {
+  const holder = document.getElementById('qcardHolder');
+  const list = DATA[currentPart];
+
+  if (showOnlyIncorrect) {
+    const wrongIndices = list.map((_, i) => i).filter(i => statusOf(currentPart, i) === 'incorrect');
+    if (wrongIndices.length === 0) {
+      holder.innerHTML = `<div class="qcard"><div class="empty-state"><div class="big">🎉</div>All questions in this part are correct (or unanswered). Nothing to review.</div></div>`;
+      return;
+    }
+    if (!wrongIndices.includes(currentIndex)) currentIndex = wrongIndices[0];
+  }
+
+  const q = list[currentIndex];
+  const rec = answers[currentPart][currentIndex];
+  const letters = ['A', 'B', 'C', 'D'];
+  const isLastQuestion = currentIndex === list.length - 1;
+
+  let optionsHtml = q.o.map((opt, i) => {
+    let cls = 'option';
+    if (rec) {
+      if (i === rec.picked && rec.correct) cls += ' picked-correct';
+      else if (i === rec.picked && !rec.correct) cls += ' picked-incorrect';
+      else if (i === q.a) cls += ' reveal-correct';
+    }
+    return `<button class="${cls}" ${rec ? 'disabled' : ''} onclick="pickAnswer(${i})">
+      <span class="letter">${letters[i]}</span><span>${opt}</span>
+    </button>`;
+  }).join('');
+
+  let feedbackHtml = '';
+  if (rec) {
+    feedbackHtml = `<div class="feedback ${rec.correct ? 'correct' : 'incorrect'}">
+      ${rec.correct ? '✓ Correct' : '✗ Incorrect — correct answer: ' + q.o[q.a]}
+      <div class="explain">${q.e}</div>
+    </div>`;
+  }
+
+  holder.innerHTML = `
+    <div class="qcard">
+      <div class="qmeta">Question ${currentIndex + 1} of ${list.length} — Part ${currentPart}</div>
+      <p class="qtext">${q.q}</p>
+      <div class="options">${optionsHtml}</div>
+      ${feedbackHtml}
+      <div class="nav-row">
+        <button class="nav-btn" onclick="prevQ()" ${currentIndex === 0 ? 'disabled' : ''}>← Back</button>
+        ${isLastQuestion
+          ? `<button class="nav-btn submit" onclick="submitQuiz()">Submit ✓</button>`
+          : `<button class="nav-btn primary" onclick="nextQ()">Next →</button>`
+        }
+      </div>
+    </div>
+  `;
+}
+
+function submitQuiz() { submitted[currentPart] = true; showResults = true; saveState(); render(); }
+function openResults() { showResults = true; render(); }
+function closeResults() { showResults = false; render(); }
+function reviewIncorrectFromResults() {
+  showResults = false; showOnlyIncorrect = true;
+  const list = DATA[currentPart];
+  const firstWrong = list.map((_, i) => i).findIndex(i => statusOf(currentPart, i) === 'incorrect');
+  if (firstWrong !== -1) currentIndex = firstWrong;
+  render();
+}
+
+function renderResultsOverlay() {
+  const existing = document.getElementById('resultsOverlay');
+  if (existing) existing.remove();
+  if (!showResults) return;
+  const list = DATA[currentPart];
+  let correct = 0, incorrect = 0, unanswered = 0;
+  list.forEach((_, i) => {
+    const s = statusOf(currentPart, i);
+    if (s === 'correct') correct++; else if (s === 'incorrect') incorrect++; else unanswered++;
+  });
+  const pct = Math.round((correct / list.length) * 100);
+  const overlay = document.createElement('div');
+  overlay.className = 'overlay'; overlay.id = 'resultsOverlay';
+  overlay.innerHTML = `
+    <div class="results-card">
+      <div class="score-label">Part ${currentPart} results</div>
+      <div class="score-big">${pct}%</div>
+      <div class="score-label">${correct} of ${list.length} correct</div>
+      <div class="results-breakdown">
+        <div class="stat"><span class="dot correct"></span>${correct} correct</div>
+        <div class="stat"><span class="dot incorrect"></span>${incorrect} incorrect</div>
+        ${unanswered > 0 ? `<div class="stat"><span class="dot unanswered"></span>${unanswered} unanswered</div>` : ''}
+      </div>
+      <div class="results-actions">
+        ${incorrect > 0 ? `<button class="nav-btn submit" onclick="reviewIncorrectFromResults()">Review ${incorrect} incorrect answer${incorrect > 1 ? 's' : ''}</button>` : ''}
+        <button class="nav-btn" onclick="closeResults()">Close</button>
+      </div>
+    </div>
+  `;
+  overlay.addEventListener('click', (e) => { if (e.target === overlay) closeResults(); });
+  document.body.appendChild(overlay);
+}
+
+function prevQ() {
+  if (showOnlyIncorrect) {
+    const list = DATA[currentPart];
+    const wrongIndices = list.map((_, i) => i).filter(i => statusOf(currentPart, i) === 'incorrect');
+    const pos = wrongIndices.indexOf(currentIndex);
+    if (pos > 0) currentIndex = wrongIndices[pos - 1];
+  } else if (currentIndex > 0) { currentIndex--; }
+  render();
+}
+function nextQ() {
+  if (showOnlyIncorrect) {
+    const list = DATA[currentPart];
+    const wrongIndices = list.map((_, i) => i).filter(i => statusOf(currentPart, i) === 'incorrect');
+    const pos = wrongIndices.indexOf(currentIndex);
+    if (pos < wrongIndices.length - 1) currentIndex = wrongIndices[pos + 1];
+  } else if (currentIndex < DATA[currentPart].length - 1) { currentIndex++; }
+  render();
+}
+
+function render() { renderScoreBar(); renderGrid(); renderQCard(); renderResultsOverlay(); }
+
+loadState();
+render();
+</script>
+</body>
+</html>
