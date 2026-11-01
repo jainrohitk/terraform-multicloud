@@ -1,0 +1,22 @@
+# # Incomplete AWS/Ansible learning example; excluded from the Azure configuration.
+# Terraform loads .tf files, not .tf.example files.
+resource "aws_instance" "web" {
+#   #...
+
+#   lifecycle {
+#     action_trigger {
+#       events  = [after_create]
+#       actions = [action.ansible_playbook.provision]
+#     }
+#   }
+# }
+
+# action "ansible_playbook" "provision" {
+#   config {
+#     extra_vars = {
+#       machine_id = caller.id
+#       #... 
+#     }
+#     #...
+#   }
+# }

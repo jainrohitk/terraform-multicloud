@@ -88,6 +88,12 @@
   .feedback.correct { background: var(--correct-bg); color: var(--correct); }
   .feedback.incorrect { background: var(--incorrect-bg); color: var(--incorrect); }
   .feedback .explain { color: var(--text); margin-top: 6px; opacity: 0.9; }
+  .explain h3 { font-size: 0.9rem; margin: 16px 0 6px; }
+  .explain p { margin: 6px 0; }
+  .answer-analysis { list-style: none; padding: 0; margin: 8px 0; }
+  .answer-analysis li { margin: 12px 0; }
+  .explain a { color: var(--accent); text-decoration: underline; overflow-wrap: anywhere; }
+  .explain a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
   .nav-row { display: flex; justify-content: space-between; margin-top: 18px; gap: 10px; }
   .nav-btn { padding: 10px 18px; border-radius: 10px; border: 1px solid var(--border); background: var(--bg-inset); color: var(--text); cursor: pointer; font-size: 0.88rem; font-family: var(--sans); }
   .nav-btn:disabled { opacity: 0.4; cursor: default; }
@@ -110,7 +116,7 @@
 <div class="wrap">
   <header>
     <h1>Terraform Intermediate Quiz — Review Mode</h1>
-    <p class="subtitle">60 questions, intermediate level. Click any question number to jump directly to it.</p>
+    <p class="subtitle">60 questions, intermediate level. Answer a question to see an in-depth explanation, an option-by-option review, a practical tip, and official documentation.</p>
     <div class="part-tabs">
       <button class="part-tab active" id="tab1" onclick="switchPart(1)">Part 1 · Q1–30</button>
       <button class="part-tab" id="tab2" onclick="switchPart(2)">Part 2 · Q31–60</button>
@@ -128,68 +134,428 @@
 <script>
 const DATA = {
   1: [
-    {q:"Two resources reference each other via attributes, creating a dependency Terraform can't resolve. What happens?", o:["Terraform reports a dependency cycle error and refuses to plan","Terraform picks one arbitrarily and applies it first","Terraform silently ignores the second reference","Terraform creates both resources in parallel regardless"], a:0, e:"Circular dependencies between resources are detected and reported as an error before planning proceeds."},
-    {q:"How do you safely ignore drift on a specific attribute (e.g., an autoscaling group's desired_count) changed outside Terraform?", o:["Remove the attribute from state manually","Add a lifecycle block with ignore_changes = [attribute]","Use terraform refresh -target","Mark the attribute as sensitive"], a:1, e:"lifecycle.ignore_changes tells Terraform to stop treating out-of-band changes to that attribute as drift."},
-    {q:"What's the difference between local-exec and remote-exec regarding connection blocks?", o:["local-exec requires a connection block; remote-exec does not", "Both always require a connection block", "remote-exec requires a connection block (SSH/WinRM) to reach the resource; local-exec does not", "Neither ever needs a connection block"], a:2, e:"remote-exec runs on the provisioned resource and needs connection details; local-exec runs on the machine running Terraform."},
-    {q:"In a for_each loop over a map, what does each.key represent?", o:["The numeric index of the iteration", "The resource's unique cloud ID", "The full map itself", "The map key for the current iteration"], a:3, e:"each.key is the current map key; each.value is the corresponding value."},
-    {q:"What's the risk of switching an existing resource from count to for_each (or vice versa)?", o:["Terraform may plan a destroy and recreate, since resource addresses (index vs key) change", "Nothing changes; Terraform automatically migrates the addresses", "Only the state file needs to be deleted, no plan changes", "Terraform blocks the switch entirely with an error"], a:0, e:"Because the addressing scheme differs, Terraform sees old and new instances as different resources unless you use moved blocks or state mv."},
-    {q:"What does a 'moved' block (Terraform 1.1+) do?", o:["It physically moves resources between cloud regions", "It tells Terraform a resource's address changed, so it updates state instead of destroying/recreating it", "It moves a module's source location automatically", "It merges two separate state files together"], a:1, e:"moved blocks let you refactor resource/module addresses in code while preserving the underlying infrastructure."},
-    {q:"What is the purpose of a precondition/postcondition block (custom conditions, Terraform 1.2+)?", o:["To automatically fix invalid configuration values", "To document code without affecting execution", "To validate assumptions or guarantees at plan/apply time, failing early with a custom error message", "To enforce billing limits on a resource"], a:2, e:"Custom conditions catch invalid assumptions before they cause confusing downstream errors."},
-    {q:"Which construct lets you fetch outputs from another Terraform state file/backend?", o:["terraform_output resource", "remote_state provider", "state_import block", "terraform_remote_state data source"], a:3, e:"terraform_remote_state reads outputs from a separately managed state, enabling cross-stack references."},
-    {q:"What does a splat expression like aws_instance.web[*].id return?", o:["A list of the given attribute across all instances", "Only the first instance's attribute", "A map keyed by instance ID", "A single concatenated string of all values"], a:0, e:"Splat expressions collect an attribute from every instance of a resource into a list."},
-    {q:"Which function provides a fallback value if an expression might error (e.g., a missing map key)?", o:["fallback()", "try()", "coalesce_error()", "safe()"], a:1, e:"try() evaluates a list of expressions and returns the first one that doesn't produce an error."},
-    {q:"What is the purpose of templatefile()?", o:["Downloads a file template from the Terraform Registry", "Creates a new .tf file from a template automatically", "Renders a template file, substituting given variables into it", "Validates a file against a JSON schema"], a:2, e:"templatefile(path, vars) is commonly used for cloud-init scripts, config files, etc."},
-    {q:"What is a null_resource typically used for?", o:["To explicitly represent infrastructure Terraform should ignore", "To reserve a resource name for future use", "To delete null values from state", "As a placeholder to trigger provisioners or logic not tied to a real infrastructure resource"], a:3, e:"null_resource is commonly paired with triggers and provisioners for actions with no direct cloud resource."},
-    {q:"What is terraform_data (introduced in Terraform 1.4)?", o:["A built-in resource that replaces many null_resource use cases with more explicit intent", "A resource used only for storing null values in state", "A deprecated alias for null_resource", "A resource exclusive to Terraform Cloud"], a:0, e:"terraform_data gives more explicit semantics for trigger-based workflows than the older null_resource pattern."},
-    {q:"What does the 'import' block (Terraform 1.5+) let you do?", o:["Importing entire modules from the public registry", "Declaratively importing existing resources into state as part of a plan/apply, instead of the CLI import command", "Importing variable values from a .tfvars file", "Importing state from a different backend automatically"], a:1, e:"The import block lets import be reviewed as part of a normal plan, rather than run imperatively via CLI."},
-    {q:"What do 'check' blocks (Terraform 1.5+) allow you to do?", o:["Validate syntax before terraform init", "Check for available provider updates", "Lock state during a run", "Run non-blocking assertions about infrastructure health after apply, without failing the whole run"], a:3, e:"check blocks surface warnings about assumptions without blocking the apply itself."},
-    {q:"What does the 'nullable' argument on a variable block control?", o:["Marks the variable as required with no default", "Hides the variable's value from output", "Restricts the variable to numeric types only", "Allows the variable to explicitly accept a null value"], a:3, e:"By default variables are nullable; setting nullable = false forces a non-null value."},
-    {q:"What does 'terraform fmt -check' do?", o:["Reports files that aren't correctly formatted, without modifying them", "Automatically reformats every file in place", "Validates HCL syntax only, ignoring formatting", "Checks formatting only inside modules, not the root"], a:0, e:"This mode is commonly used in CI to fail a build if code isn't properly formatted."},
-    {q:"Which command outputs a plan in machine-readable JSON (useful for policy checks or drift tooling)?", o:["terraform plan --json", "terraform show -json <planfile>", "terraform output -json", "terraform state show --json"], a:1, e:"terraform show -json converts a saved plan (or state) into a structured JSON representation."},
-    {q:"What's a common way to lock remote state stored in S3 (pre-native S3 locking)?", o:["Using an S3 bucket policy alone", "Using IAM roles exclusively", "Using a DynamoDB table for state locking", "Using a local .lock file synced via S3"], a:2, e:"A DynamoDB table with a lock ID column is the traditional pattern for S3 backend locking."},
-    {q:"When migrating from a local to a remote backend, what typically reconfigures the backend and offers to copy state?", o:["terraform state push --migrate", "terraform backend migrate", "terraform apply -backend-config", "terraform init, which detects the backend change and offers to copy existing state"], a:3, e:"terraform init handles backend changes interactively, including offering a state migration."},
-    {q:"What does ${terraform.workspace} let you reference inside a configuration?", o:["The name of the currently selected workspace, to vary naming/config per workspace", "The Terraform CLI version currently installed", "The current backend type", "The last applied plan's timestamp"], a:0, e:"This is commonly used to prefix resource names or pick environment-specific values per workspace."},
-    {q:"What's the main risk of using count with a list whose order can change?", o:["Terraform automatically re-sorts the list to prevent issues", "Resources can be destroyed and recreated unexpectedly as their index shifts", "Nothing changes since count doesn't track order", "It causes a permanent state lock"], a:1, e:"Because count uses numeric indices, reordering the underlying list shifts which resource maps to which index."},
-    {q:"Which expression syntax transforms a list/map inline, e.g. [for x in list : x.name]?", o:["a 'loop' block", "a 'map' function only", "a 'for' expression", "a 'foreach' statement"], a:2, e:"For expressions are Terraform's inline way to transform collections."},
-    {q:"What does an optional() wrapper achieve inside an object type constraint?", o:["Marks a resource as optional to create", "Allows a provider to be optionally installed", "Marks an entire module as optional in a for_each", "Marks an attribute in an object type as optional, optionally with a default value"], a:3, e:"optional() lets object-typed variables have attributes that callers may omit."},
-    {q:"What does the TF_VAR_ prefix on an environment variable do?", o:["Enables verbose variable debugging output", "Sets the value of a Terraform input variable matching the name after the prefix", "Marks a variable as sensitive automatically", "Overrides the backend configuration"], a:1, e:"TF_VAR_region=us-east-1 sets the 'region' input variable, for example."},
-    {q:"What is the purpose of the 'external' data source?", o:["Fetches data exclusively from public APIs over HTTPS", "Imports resources from an external Terraform workspace", "Runs an external program and uses its JSON output as data within Terraform", "Validates external network connectivity before apply"], a:2, e:"The external provider is an escape hatch for pulling in data via an arbitrary script."},
-    {q:"Why might you enable a provider plugin cache directory locally?", o:["To store secrets used by providers", "To cache the state file locally for faster access", "To avoid re-downloading the same provider binaries for every project, speeding up terraform init", "To enable fully offline mode with no internet ever needed"], a:2, e:"The plugin cache avoids redundant downloads across multiple projects using the same provider version."},
-    {q:"Which environment variable enables detailed Terraform debug logging?", o:["TF_DEBUG", "TERRAFORM_VERBOSE", "TF_TRACE", "TF_LOG"], a:3, e:"TF_LOG (set to TRACE, DEBUG, INFO, WARN, or ERROR) controls Terraform's internal logging verbosity."},
-    {q:"Why should a team version-control the .terraform.lock.hcl file?", o:["It's required for terraform to run at all", "It stores the team's shared secrets", "It replaces the need for a .gitignore file", "Ensures every team member and CI pipeline uses identical provider versions/checksums"], a:3, e:"Without committing the lock file, different runs could resolve slightly different provider versions."},
-    {q:"What's a valid reason to prefer for_each over count when creating similar resources?", o:["for_each is always faster to execute than count", "for_each ties instances to stable keys, so removing a middle item doesn't shift/recreate unrelated resources", "for_each doesn't require unique keys", "count cannot be used inside modules at all"], a:1, e:"Keyed iteration avoids the index-shifting problem that count has when the underlying collection changes."}
+    {
+      q:"Two resources reference each other via attributes, creating a dependency Terraform can't resolve. What happens?", o:["Terraform reports a dependency cycle error and refuses to plan","Terraform picks one arbitrarily and applies it first","Terraform silently ignores the second reference","Terraform creates both resources in parallel regardless"], a:0,
+      e:"Terraform builds a directed dependency graph from references and explicit dependencies. A cycle means there is no valid ordering in which all prerequisites can be satisfied, so Terraform reports the cycle rather than producing a usable plan.",
+      r:["Correct: graph validation detects circular dependencies before operations can be scheduled.", "Arbitrary ordering would violate at least one resource's prerequisite; Terraform does not guess.", "Ignoring a reference would change the configuration's meaning and potentially use an unavailable value.", "Parallelism only helps independent nodes; it cannot resolve mutually dependent prerequisites."],
+      tip:"For mutually referencing security groups, consider separate rule resources so both groups can exist before rules reference their IDs. Adding more depends_on relationships does not break a cycle.",
+      doc:"Terraform dependency graph: validating the graph", url:"https://developer.hashicorp.com/terraform/internals/graph"
+    },
+    {
+      q:"How do you safely ignore drift on a specific attribute (e.g., an ECS service's desired_count) changed outside Terraform?", o:["Remove the attribute from state manually","Add a lifecycle block with ignore_changes = [attribute]","Use terraform refresh -target","Mark the attribute as sensitive"], a:1,
+      e:"The lifecycle ignore_changes rule excludes selected attributes from update comparisons, while still considering their configured values when creating a resource. It supports shared ownership when an external controller legitimately changes an attribute.",
+      r:["Editing state is not an ongoing ownership policy; refresh can read the attribute again, and manual edits can corrupt state.", "Correct: a static attribute path such as ignore_changes = [desired_count] tells Terraform not to reconcile that field during updates.", "Refreshing observes remote values; it does not prevent later plans from comparing them with configuration.", "Sensitive controls display redaction, not drift detection or resource updates."],
+      tip:"Use this when an autoscaler owns ECS desired_count, not to silence unexplained changes. Terraform will also ignore unwanted drift on that field, so keep the ignored attribute list narrow.",
+      doc:"Lifecycle reference: ignore_changes", url:"https://developer.hashicorp.com/terraform/language/meta-arguments/lifecycle#ignore_changes"
+    },
+    {
+      q:"What's the difference between local-exec and remote-exec regarding connection blocks?", o:["local-exec requires a connection block; remote-exec does not", "Both always require a connection block", "remote-exec requires a connection block (SSH/WinRM) to reach the resource; local-exec does not", "Neither ever needs a connection block"], a:2,
+      e:"local-exec starts a command on the Terraform runner, which may be your laptop or a CI worker. remote-exec connects to a remote host using SSH or WinRM; connection settings can be supplied at the resource or provisioner level.",
+      r:["This reverses the behavior: it is the remote provisioner that needs connection settings.", "A local process does not need Terraform's remote connection block.", "Correct: remote-exec needs transport, host, and authentication information; local-exec runs locally.", "remote-exec cannot execute on a host without a supported, reachable connection."],
+      tip:"A local-exec command does not run inside the newly created VM. Prefer cloud-init or image-based bootstrapping where possible; remote provisioning also depends on network access and host readiness.",
+      doc:"Provisioner connections: SSH and WinRM", url:"https://developer.hashicorp.com/terraform/language/provisioners#connect-to-remote-resources"
+    },
+    {
+      q:"In a for_each loop over a map, what does each.key represent?", o:["The numeric index of the iteration", "The resource's unique cloud ID", "The full map itself", "The map key for the current iteration"], a:3,
+      e:"Resource for_each creates one instance per map entry. each.key is the entry's string key and becomes part of the Terraform address, while each.value is the value associated with that key.",
+      r:["Numeric indexes belong to count.index; map-based instance identity uses keys.", "The key is chosen by configuration, not assigned by the cloud provider.", "The original map is the entire collection; each describes only the current instance.", "Correct: a key such as prod identifies an address like aws_instance.web[\"prod\"]."],
+      tip:"Choose stable semantic keys such as environment names. Keys must be known and non-sensitive during planning; changing a key changes the instance address even if each.value remains the same.",
+      doc:"for_each reference: the each object", url:"https://developer.hashicorp.com/terraform/language/meta-arguments/for_each#referring-to-instances"
+    },
+    {
+      q:"What's the risk of switching an existing resource from count to for_each (or vice versa)?", o:["Terraform may plan a destroy and recreate, since resource addresses (index vs key) change", "Nothing changes; Terraform automatically migrates the addresses", "Only the state file needs to be deleted, no plan changes", "Terraform blocks the switch entirely with an error"], a:0,
+      e:"Terraform associates remote objects with resource addresses in state. An instance at web[0] and one at web[\"prod\"] have different identities unless you explicitly describe how the old address maps to the new one.",
+      r:["Correct: without address migration, Terraform can interpret the old instance as removed and the new instance as needing creation.", "Terraform cannot generally infer which arbitrary string key corresponds to each numeric index.", "Deleting state discards ownership records and can lead to duplicate creation or conflicts.", "The refactor is supported; it simply requires careful state/address migration."],
+      tip:"Add moved blocks mapping each old index to its new key, or use a coordinated terraform state mv. Back up state and inspect the plan; unrelated attribute changes can still cause replacements.",
+      doc:"Refactoring: moving between count and for_each", url:"https://developer.hashicorp.com/terraform/language/modules/develop/refactoring"
+    },
+    {
+      q:"What does a 'moved' block (Terraform 1.1+) do?", o:["It physically moves resources between cloud regions", "It tells Terraform a resource's address changed, so it updates state instead of destroying/recreating it", "It moves a module's source location automatically", "It merges two separate state files together"], a:1,
+      e:"A moved block records an old and new Terraform address. Terraform interprets the existing object's binding at the new address, allowing a resource or module refactor without replacement caused solely by the address change.",
+      r:["Cloud relocation is a provider operation and may itself require replacement; moved changes Terraform addressing.", "Correct: the from/to mapping preserves the managed object's identity during a refactor.", "A module's source controls where its code is downloaded from; moved does not relocate that source code.", "Moved blocks operate on addresses within a configuration's state, not arbitrary state-file merging."],
+      tip:"Use moved blocks when renaming a resource label or extracting resources into a module. Retain historical moves so consumers can upgrade from older versions; still review any provider-argument changes separately.",
+      doc:"Refactor modules with moved blocks", url:"https://developer.hashicorp.com/terraform/language/modules/develop/refactoring"
+    },
+    {
+      q:"What is the purpose of a precondition/postcondition block (custom conditions, Terraform 1.2+)?", o:["To automatically fix invalid configuration values", "To document code without affecting execution", "To validate assumptions or guarantees at plan/apply time, failing early with a custom error message", "To enforce billing limits on a resource"], a:2,
+      e:"Preconditions validate assumptions before the associated operation; postconditions validate the resulting resource or data-source values. Conditions evaluate when their inputs are known, which can be during planning or deferred until apply.",
+      r:["Conditions report violations; they do not rewrite invalid inputs.", "These are executable assertions that can block an operation or dependent operations, not just comments.", "Correct: a failed assertion produces the supplied error message and stops the affected workflow.", "A condition can check an available budget-related value, but it does not impose a cloud billing cap."],
+      tip:"Check an image's architecture before creating a VM, or a resulting resource property afterward. A failed postcondition does not roll back infrastructure already created; use non-blocking check assertions for advisory health checks.",
+      doc:"Custom conditions: preconditions and postconditions", url:"https://developer.hashicorp.com/terraform/language/validate#preconditions-and-postconditions"
+    },
+    {
+      q:"Which construct lets you fetch outputs from another Terraform state file/backend?", o:["terraform_output resource", "remote_state provider", "state_import block", "terraform_remote_state data source"], a:3,
+      e:"The built-in terraform_remote_state data source reads the latest state snapshot from a configured backend and exposes its root outputs. It allows separately managed stacks to exchange values without sharing a single lifecycle.",
+      r:["There is no built-in terraform_output resource; output blocks publish values instead.", "The construct is a data source from the built-in Terraform provider, not a provider named remote_state.", "A state_import block is not Terraform syntax; import blocks adopt cloud resources rather than read outputs.", "Correct: its outputs attribute exposes values exported at the other configuration's root."],
+      tip:"A consumer generally needs access to the full state snapshot, even though only outputs are exposed in expressions. Prefer a dedicated outputs service or parameter store when full-state access would reveal secrets.",
+      doc:"terraform_remote_state data source and security", url:"https://developer.hashicorp.com/terraform/language/state/remote-state-data"
+    },
+    {
+      q:"What does a splat expression like aws_instance.web[*].id return?", o:["A list of the given attribute across all instances", "Only the first instance's attribute", "A map keyed by instance ID", "A single concatenated string of all values"], a:0,
+      e:"A full splat applies an attribute access to each element of a sequence and produces a tuple, commonly consumed as a list-like collection. For a count-based resource, web[*].id collects every instance ID.",
+      r:["Correct in the question's list-like sense: the result contains one id per sequence element.", "Selecting only the first element would require an index such as web[0].id.", "A keyed result requires an object/map-producing for expression; a splat does not invent keys.", "Combining IDs into text requires a separate function such as join."],
+      tip:"Resources using for_each are maps, not sequences. Use a for expression to preserve keys, or values(aws_instance.web)[*].id if keys are unnecessary. Prefer modern [*] syntax over legacy .* splats.",
+      doc:"Splat expressions and for_each limitations", url:"https://developer.hashicorp.com/terraform/language/expressions/splat"
+    },
+    {
+      q:"Which function provides a fallback value if an expression might error (e.g., a missing map key)?", o:["fallback()", "try()", "coalesce_error()", "safe()"], a:1,
+      e:"try evaluates candidate expressions and returns the first that succeeds without a dynamic evaluation error. For example, try(local.settings.region, \"us-east-1\") can normalize data whose region attribute might be absent.",
+      r:["fallback is not a built-in Terraform function.", "Correct: try handles dynamic errors such as missing attributes and returns a successful alternative.", "coalesce_error is not a built-in function; coalesce handles null/empty values, not evaluation errors.", "safe is not a built-in Terraform function; can tests whether an expression evaluates successfully."],
+      tip:"Keep try in normalization locals rather than masking mistakes throughout a module. It cannot catch statically invalid references such as an undeclared variable, and a successful null result does not trigger a fallback.",
+      doc:"try function: dynamic errors and normalization", url:"https://developer.hashicorp.com/terraform/language/functions/try"
+    },
+    {
+      q:"What is the purpose of templatefile()?", o:["Downloads a file template from the Terraform Registry", "Creates a new .tf file from a template automatically", "Renders a template file, substituting given variables into it", "Validates a file against a JSON schema"], a:2,
+      e:"templatefile(path, vars) reads a UTF-8 file and evaluates its Terraform template expressions using the provided variables object. The result is a string that can be passed to another argument, such as a VM's user-data script.",
+      r:["It reads an existing local file; it is not a Registry downloader.", "It returns text and does not write a file or create Terraform configuration on disk.", "Correct: interpolations and template directives render using the supplied variables.", "Rendering is not JSON schema validation; syntax and schema checks require separate mechanisms."],
+      tip:"Use templatefile(\"${path.module}/cloud-init.tftpl\", {...}) for portable module paths. The file must exist when the run starts; for JSON/YAML templates prefer jsonencode/yamlencode to hand-built escaping.",
+      doc:"templatefile function", url:"https://developer.hashicorp.com/terraform/language/functions/templatefile"
+    },
+    {
+      q:"What is a null_resource typically used for?", o:["To explicitly represent infrastructure Terraform should ignore", "To reserve a resource name for future use", "To delete null values from state", "As a placeholder to trigger provisioners or logic not tied to a real infrastructure resource"], a:3,
+      e:"The null provider's null_resource has a Terraform lifecycle without representing a cloud object. Its triggers map can force replacement when values change, making it a traditional host for provisioners or orchestration steps.",
+      r:["Ignored attributes are controlled by lifecycle.ignore_changes, not by null_resource.", "It does not reserve a cloud name or prevent another resource from using that name.", "It does not remove null values or clean other resources' state.", "Correct: it supplies an address and lifecycle for an action with no directly managed cloud object."],
+      tip:"Provisioners are a last resort and external side effects are not automatically tracked or rolled back. For new Terraform 1.4+ configurations, consider built-in terraform_data instead of adding the null provider.",
+      doc:"Null provider: null_resource and triggers", url:"https://registry.terraform.io/providers/hashicorp/null/latest/docs/resources/resource"
+    },
+    {
+      q:"What is terraform_data (introduced in Terraform 1.4)?", o:["A built-in resource that replaces many null_resource use cases with more explicit intent", "A resource used only for storing null values in state", "A deprecated alias for null_resource", "A resource exclusive to Terraform Cloud"], a:0,
+      e:"terraform_data is supplied by the built-in terraform.io/builtin/terraform provider. It stores input/output values and offers triggers_replace to cause replacement, supporting lifecycle-driven workflows without downloading a separate provider.",
+      r:["Correct: it covers many lifecycle/provisioner patterns previously implemented with null_resource.", "It can hold ordinary Terraform values, not only null, and can drive replacement actions.", "It is a distinct built-in resource, not a deprecated spelling of the null provider's resource.", "It works with the Terraform CLI and supported backends, not only hosted execution."],
+      tip:"Use input to retain a value and triggers_replace when a change must rerun a lifecycle action. Changing input alone normally updates the helper rather than rerunning a creation-time provisioner.",
+      doc:"terraform_data resource reference", url:"https://developer.hashicorp.com/terraform/language/resources/terraform-data"
+    },
+    {
+      q:"What does the 'import' block (Terraform 1.5+) let you do?", o:["Importing entire modules from the public registry", "Declaratively importing existing resources into state as part of a plan/apply, instead of the CLI import command", "Importing variable values from a .tfvars file", "Importing state from a different backend automatically"], a:1,
+      e:"An import block declares the destination resource address and an existing remote object's import identity. Terraform can preview adoption in a plan and record it in state during apply, making imports reviewable in version control.",
+      r:["Registry modules are installed through module source declarations and terraform init.", "Correct: the existing object becomes managed at the configured address through the normal workflow.", "Variable files supply inputs through automatic loading or -var-file; they do not adopt resources.", "Moving state between backends uses initialization with migration options, not resource import."],
+      tip:"Match the resource configuration to the existing object's settings and review proposed updates before applying. Importing an Azure resource group does not import its contents, and one object should not be owned by multiple states.",
+      doc:"Import existing resources with import blocks", url:"https://developer.hashicorp.com/terraform/language/import"
+    },
+    {
+      q:"What do 'check' blocks (Terraform 1.5+) allow you to do?", o:["Validate syntax before terraform init", "Check for available provider updates", "Lock state during a run", "Run non-blocking assertions about infrastructure health during plan/apply, without failing the whole run"], a:3,
+      e:"A check block contains assertions about configuration or infrastructure behavior. Terraform evaluates them during plan/apply when values are available; a failed check assertion reports a warning instead of blocking the operation.",
+      r:["Syntax/configuration validation belongs to commands such as terraform validate, not health assertions.", "Dependency version selection belongs to required_providers and terraform init -upgrade.", "Locking is implemented by the backend and is unrelated to check blocks.", "Correct: check assertions provide advisory validation, unlike blocking preconditions or postconditions."],
+      tip:"Use checks to report endpoint health or other operational assumptions. If a violation must stop deployment, use an appropriate blocking condition or policy rather than relying on a check warning.",
+      doc:"Custom conditions: non-blocking checks", url:"https://developer.hashicorp.com/terraform/language/validate#checks"
+    },
+    {
+      q:"What does the 'nullable' argument on a variable block control?", o:["Marks the variable as required with no default", "Hides the variable's value from output", "Restricts the variable to numeric types only", "Allows the variable to explicitly accept a null value"], a:3,
+      e:"nullable controls whether the variable's top-level value may be null and defaults to true. With nullable = false, a supplied null uses a non-null default if one exists; otherwise Terraform requires a non-null value.",
+      r:["A variable is required when it has no default; that is separate from whether null is permitted.", "Display redaction is controlled by sensitive, not nullable.", "The type argument controls numeric or other type constraints.", "Correct: nullable governs acceptance of an explicit null at the variable's top level."],
+      tip:"nullable = false does not reject empty strings or prevent null elements inside a collection/object. Add custom validation for those cases; do not assume non-null means the input is meaningful.",
+      doc:"Input variables: disallowing null input values", url:"https://developer.hashicorp.com/terraform/language/block/variable#nullable"
+    },
+    {
+      q:"What does 'terraform fmt -check' do?", o:["Reports files that aren't correctly formatted, without modifying them", "Automatically reformats every file in place", "Validates HCL syntax only, ignoring formatting", "Checks formatting only inside modules, not the root"], a:0,
+      e:"terraform fmt -check checks whether configuration matches Terraform's canonical formatting and returns a nonzero exit code when it does not. Unlike ordinary fmt, check mode does not rewrite files.",
+      r:["Correct: it reports formatting differences, making it suitable for a CI quality gate.", "Plain terraform fmt rewrites files; -check deliberately disables that behavior.", "fmt concerns formatting; use terraform validate for broader configuration consistency checks.", "It checks the selected/current directory; add -recursive to include subdirectories."],
+      tip:"Run terraform fmt -check -recursive in CI and terraform fmt -recursive locally to fix formatting. Formatting success does not prove that provider arguments, credentials, or resource logic are correct.",
+      doc:"terraform fmt command and check mode", url:"https://developer.hashicorp.com/terraform/cli/commands/fmt"
+    },
+    {
+      q:"Which command converts a saved plan into a machine-readable JSON document for inspecting planned resource changes?", o:["terraform plan -json", "terraform show -json <planfile>", "terraform output -json", "terraform state show -json"], a:1,
+      e:"First save a plan with terraform plan -out=tfplan, then use terraform show -json tfplan to obtain a structured document describing planned values, resource changes, configuration, and related metadata.",
+      r:["plan -json emits a machine-readable UI event stream; it is not the same schema as a saved-plan JSON document.", "Correct: show -json reads the saved artifact and emits the structured plan representation.", "output -json exports root output values from state, not a full proposed resource-change document.", "state show is a human-oriented single-resource view and does not support a -json option."],
+      tip:"Use the saved-plan JSON schema for policy checks rather than parsing terminal text. JSON can reveal sensitive values in plaintext, so protect both the saved plan and any generated JSON artifacts.",
+      doc:"terraform show: JSON output", url:"https://developer.hashicorp.com/terraform/cli/commands/show#json-output"
+    },
+    {
+      q:"What's a common way to lock remote state stored in S3 (pre-native S3 locking)?", o:["Using an S3 bucket policy alone", "Using IAM roles exclusively", "Using a DynamoDB table for state locking", "Using a local .lock file synced via S3"], a:2,
+      e:"Historically the S3 backend used a DynamoDB table with a string partition key named LockID to coordinate concurrent state writers. DynamoDB-based locking is now deprecated; Terraform 1.10+ supports native S3 locking with use_lockfile = true.",
+      r:["A bucket policy authorizes operations; it does not implement Terraform's lock acquisition protocol.", "IAM roles establish permissions, not mutual exclusion between Terraform runs.", "Correct for the historical scenario: the backend used DynamoDB conditional operations to coordinate locks.", "Synchronizing a local file does not provide the backend's atomic, coordinated locking behavior."],
+      tip:"For new configurations use supported native S3 locking and grant the necessary lock-object permissions. Enable state-object versioning for recovery; version history and locking solve different problems.",
+      doc:"S3 backend: native and deprecated DynamoDB locking", url:"https://developer.hashicorp.com/terraform/language/backend/s3#state-locking"
+    },
+    {
+      q:"When migrating from a local to a remote backend, what typically reconfigures the backend and offers to copy state?", o:["terraform state push --migrate", "terraform backend migrate", "terraform apply -backend-config", "terraform init -migrate-state, which reconfigures the backend and offers to copy existing state"], a:3,
+      e:"After you change backend configuration, terraform init -migrate-state initializes the destination and attempts to copy existing state, asking for confirmation where needed. Terraform's backend metadata lets it identify the previously configured location.",
+      r:["state push writes a supplied state snapshot to the current backend; it has no --migrate option.", "Terraform has no backend migrate subcommand.", "Backend configuration is handled by init, not by an apply -backend-config option.", "Correct: -migrate-state explicitly requests migration; -reconfigure instead resets backend setup without copying state."],
+      tip:"Back up state and stop concurrent runs before migration. Keep the existing backend metadata until migration is complete, and verify the destination before approving; moving state does not move cloud resources.",
+      doc:"terraform init: backend initialization and migration", url:"https://developer.hashicorp.com/terraform/cli/commands/init#backend-initialization"
+    },
+    {
+      q:"What does ${terraform.workspace} let you reference inside a configuration?", o:["The name of the currently selected workspace, to vary naming/config per workspace", "The Terraform CLI version currently installed", "The current backend type", "The last applied plan's timestamp"], a:0,
+      e:"terraform.workspace evaluates to the current CLI workspace name, such as default or dev. Inside a string, interpolation can incorporate that name into resource names or environment-specific lookups.",
+      r:["Correct: it refers to the selected workspace context, not a provider or resource attribute.", "It is not a CLI-version attribute; required_version constrains acceptable CLI versions.", "Backend type is defined by the backend configuration and is not exposed by this reference.", "It does not represent run history or an apply timestamp."],
+      tip:"Workspace-specific names do not create credential or access-control isolation. CLI workspaces separate state within a backend but are not automatically equivalent to distinct HCP Terraform workspaces or independent environments.",
+      doc:"CLI workspaces: current-workspace interpolation", url:"https://developer.hashicorp.com/terraform/language/state/workspaces#current-workspace-interpolation"
+    },
+    {
+      q:"What's the main risk of using count with a list whose order can change?", o:["Terraform automatically re-sorts the list to prevent issues", "Resources can be destroyed and recreated unexpectedly as their index shifts", "Nothing changes since count doesn't track order", "It causes a permanent state lock"], a:1,
+      e:"count binds instances to numeric indexes, not to the semantic identity of list entries. If entry zero is removed, later values can shift to earlier addresses, changing the desired arguments of multiple existing instances.",
+      r:["Terraform preserves list ordering; it does not sort a list to protect resource identities.", "Correct: shifted arguments may cause updates or replacements depending on the provider's schema.", "The index-to-value mapping matters whenever arguments read from the list using count.index.", "Collection ordering does not create permanent backend locks."],
+      tip:"Prefer for_each over a map keyed by stable IDs when items have independent identities. Migrating existing count instances still requires moved blocks or coordinated state moves to avoid address-driven replacement.",
+      doc:"count: when to use for_each instead", url:"https://developer.hashicorp.com/terraform/language/meta-arguments/count"
+    },
+    {
+      q:"Which expression syntax transforms a list/map inline, e.g. [for x in list : x.name]?", o:["a 'loop' block", "a 'map' function only", "a 'for' expression", "a 'foreach' statement"], a:2,
+      e:"A for expression transforms each input element into a result and can filter elements with an if clause. Square brackets construct a tuple; braces construct an object using key => value expressions.",
+      r:["Terraform has no generic imperative loop block for transforming values.", "The map type and map-related functions do not replace the general transformation syntax.", "Correct: for expressions transform collections without declaring new resource instances.", "There is no foreach statement; for_each is a distinct resource/module meta-argument or dynamic-block iterator."],
+      tip:"Use [for server in var.servers : server.name if server.enabled] to derive inputs. Use resource for_each to create instances and dynamic blocks to generate nested configuration blocks instead.",
+      doc:"For expressions: transformations, filtering, and grouping", url:"https://developer.hashicorp.com/terraform/language/expressions/for"
+    },
+    {
+      q:"What does an optional() wrapper achieve inside an object type constraint?", o:["Marks a resource as optional to create", "Allows a provider to be optionally installed", "Marks an entire module as optional in a for_each", "Marks an attribute in an object type as optional, optionally with a default value"], a:3,
+      e:"Inside an object type constraint, optional(type, default) permits an attribute to be omitted. Without an explicit default the attribute receives null; a non-null default is used when the caller omits the attribute or explicitly supplies null.",
+      r:["Resource creation is controlled through configuration and often count/for_each, not an object attribute modifier.", "Provider installation follows required_providers and the dependency graph.", "Module instance selection is controlled by count or for_each values.", "Correct: optional changes the contract for an individual attribute in an object-typed input."],
+      tip:"For example, object({ enabled = optional(bool, true) }) offers a sensible default without forcing every caller to specify it. Stable optional object attributes require Terraform 1.3+; validate nested values when necessary.",
+      doc:"Type constraints: optional object attributes", url:"https://developer.hashicorp.com/terraform/language/expressions/type-constraints#optional-object-type-attributes"
+    },
+    {
+      q:"What does the TF_VAR_ prefix on an environment variable do?", o:["Enables verbose variable debugging output", "Sets the value of a Terraform input variable matching the name after the prefix", "Marks a variable as sensitive automatically", "Overrides the backend configuration"], a:1,
+      e:"Terraform automatically reads TF_VAR_name as a candidate value for a declared root input variable named name. For example, TF_VAR_region supplies var.region without an explicit environment lookup in HCL.",
+      r:["Debug logging uses TF_LOG; TF_VAR_ supplies input values.", "Correct: the suffix must match the Terraform input variable name, including its case.", "The variable must be declared sensitive separately; naming alone does not redact its value.", "Backend configuration is separate from normal input-variable evaluation."],
+      tip:"In PowerShell use $env:TF_VAR_region = \"us-east-1\" in the same terminal. Variable files and command-line inputs can override it. Native AWS_/ARM_ credential variables are read by providers directly and need no TF_VAR_ prefix.",
+      doc:"Environment variables: TF_VAR_name", url:"https://developer.hashicorp.com/terraform/cli/config/environment-variables#tf_var_name"
+    },
+    {
+      q:"What is the purpose of the 'external' data source?", o:["Fetches data exclusively from public APIs over HTTPS", "Imports resources from an external Terraform workspace", "Runs an external program and uses its JSON output as data within Terraform", "Validates external network connectivity before apply"], a:2,
+      e:"The external provider invokes a program that follows a JSON stdin/stdout protocol. It passes a query object to the program and reads a JSON object whose values are strings, exposing that result to Terraform expressions.",
+      r:["The program can use local tools or other sources; HTTPS and public APIs are not required.", "Resource import and remote-state output access are separate Terraform mechanisms.", "Correct: it adapts an external program's JSON result into a data source.", "A script could test connectivity, but the data source does not inherently perform or enforce network validation."],
+      tip:"Prefer a native provider data source where possible. Keep scripts read-only and repeatable, write diagnostics to stderr, and emit only valid protocol JSON on stdout; CI must have the required interpreter and tools.",
+      doc:"External provider: external data source protocol", url:"https://registry.terraform.io/providers/hashicorp/external/latest/docs/data-sources/external"
+    },
+    {
+      q:"Why might you enable a provider plugin cache directory locally?", o:["To store secrets used by providers", "To cache the state file locally for faster access", "To avoid re-downloading the same provider binaries for every project, speeding up terraform init", "To enable fully offline mode with no internet ever needed"], a:2,
+      e:"A shared plugin cache reuses already downloaded provider packages across working directories. Configure plugin_cache_dir in the CLI configuration or TF_PLUGIN_CACHE_DIR; the cache location must already exist.",
+      r:["Provider binaries, not authentication secrets, belong in this cache.", "Backend state storage is unrelated to caching provider installation packages.", "Correct: matching cached provider versions avoid redundant package downloads.", "Terraform may still need registry metadata, uncached providers, or module downloads; a cache is not an offline mirror."],
+      tip:"Use caching to speed repeated initialization, but keep the dependency lock file for version/checksum control. A provider mirror is the deliberate distribution mechanism for controlled or offline installation environments.",
+      doc:"CLI configuration: provider plugin cache", url:"https://developer.hashicorp.com/terraform/cli/config/config-file#provider-plugin-cache"
+    },
+    {
+      q:"Which environment variable enables detailed Terraform debug logging?", o:["TF_DEBUG", "TERRAFORM_VERBOSE", "TF_TRACE", "TF_LOG"], a:3,
+      e:"TF_LOG controls Terraform logging verbosity, with levels TRACE, DEBUG, INFO, WARN, and ERROR. Logs are normally written to stderr; TF_LOG_PATH can also persist them to a file while logging is enabled.",
+      r:["TF_DEBUG is not Terraform's documented logging control.", "TERRAFORM_VERBOSE is not the standard environment variable for Terraform diagnostics.", "TRACE is a level assigned to TF_LOG, not a variable named TF_TRACE.", "Correct: setting TF_LOG=DEBUG or TRACE enables detailed diagnostic messages."],
+      tip:"Enable debug logs only while diagnosing a problem and inspect them for secrets before sharing. In PowerShell, Remove-Item Env:\\TF_LOG disables the setting for future commands in that terminal.",
+      doc:"Environment variables: TF_LOG and TF_LOG_PATH", url:"https://developer.hashicorp.com/terraform/cli/config/environment-variables#tf_log"
+    },
+    {
+      q:"Why should a team version-control the .terraform.lock.hcl file?", o:["It's required for terraform to run at all", "It stores the team's shared secrets", "It replaces the need for a .gitignore file", "Ensures every team member and CI pipeline uses identical provider versions/checksums"], a:3,
+      e:"The dependency lock file records selected provider versions and accepted package checksums. Normal initialization reuses those selections, making provider installation reproducible across developers and CI within supported platforms.",
+      r:["Terraform can create a lock file during init, but an uncommitted selection is not shared reproducibly.", "It records dependency metadata, not credentials or infrastructure secrets.", "You still need ignore rules for state, plans, credentials, and .terraform installation directories.", "Correct: committing the selections/checksums makes unexpected provider upgrades less likely and package integrity reviewable."],
+      tip:"Review changes after init -upgrade and use terraform providers lock for additional target platforms when needed. The lock file does not lock remote module versions; constrain those separately.",
+      doc:"Dependency lock file: provider selections and checksums", url:"https://developer.hashicorp.com/terraform/language/files/dependency-lock"
+    },
+    {
+      q:"What's a valid reason to prefer for_each over count when creating similar resources?", o:["for_each is always faster to execute than count", "for_each ties instances to stable keys, so removing a middle item doesn't shift/recreate unrelated resources", "for_each doesn't require unique keys", "count cannot be used inside modules at all"], a:1,
+      e:"for_each identifies each instance by a map key or set member rather than its position in a list. Removing one key removes that instance without renumbering the addresses of the remaining entries.",
+      r:["There is no general speed guarantee; execution depends on the dependency graph and provider operations.", "Correct: stable keys preserve unrelated instance identities when the collection changes.", "Map keys and set members are unique; toset also removes duplicate strings.", "count is supported on module blocks as well as resources."],
+      tip:"Use for_each for named environments, users, or subnets. Keys must be known and non-sensitive at plan time; changing a key still requires a moved block if you intend to retain the same managed object.",
+      doc:"for_each reference: instance identity and limitations", url:"https://developer.hashicorp.com/terraform/language/meta-arguments/for_each"
+    }
   ],
   2: [
-    {q:"Why maintain separate .tfvars files per environment (dev.tfvars, prod.tfvars)?", o:["To physically separate state files, with no other benefit", "To bypass the need for a backend configuration", "To pass different variable values per environment while reusing the same configuration", "To allow each environment to use a different HCL syntax version"], a:2, e:"Separate .tfvars files keep one shared configuration while customizing values per environment."},
-    {q:"What does 'terraform workspace show' do?", o:["Lists all workspaces and their resource counts", "Shows the state file contents of a workspace", "Displays billing information per workspace", "Prints the name of the currently selected workspace"], a:3, e:"It's a quick way to confirm which workspace context you're currently operating in."},
-    {q:"In a multi-region setup using provider aliases, how do you pass the aliased provider into a child module?", o:["Using the 'providers' argument in the module block to map the alias to the module's expected provider", "Aliases are inherited automatically with no configuration needed", "By duplicating the provider block inside the child module", "Provider aliases cannot be passed into modules"], a:0, e:"The providers map argument explicitly wires a parent alias to the provider name the module expects."},
-    {q:"Why export module outputs and re-expose them at the root level?", o:["It's required for the module to apply successfully", "To reduce the module's overall resource count", "To make values computed within a module available to other modules or as final config outputs", "To bypass state locking for that module"], a:2, e:"Root-level outputs are how you surface useful values computed inside a module."},
-    {q:"What's a key risk of storing state locally in a team setting?", o:["Local state is always encrypted, unlike remote state", "Local state automatically syncs across machines", "There is no risk; local state is recommended for teams", "No shared state means team members can conflict or overwrite each other's changes without a lock"], a:3, e:"Remote backends with locking exist specifically to prevent this kind of collision."},
-    {q:"What does enabling S3 bucket versioning for a remote state bucket protect against?", o:["Speeds up terraform plan execution", "Automatically encrypts secrets within the state", "Enables multi-region replication of resources", "Accidental state corruption or deletion, by keeping prior versions recoverable"], a:3, e:"Versioning lets you roll back to a previous state file if something goes wrong."},
-    {q:"What's a benefit of running 'terraform plan' as part of a pull request check in CI?", o:["It automatically applies the changes once the PR is opened", "It replaces the need for code review entirely", "It only checks HCL syntax, not actual infrastructure impact", "Reviewers can see the exact infrastructure impact before merging, catching unintended changes"], a:3, e:"Plan-on-PR is a standard safeguard against merging changes with unreviewed infrastructure impact."},
-    {q:"What happens to the 'sensitive' marking on an output when it's referenced by another module?", o:["Sensitivity is lost once passed to another module", "The value is automatically encrypted at rest in state", "It prevents the value from being used at all downstream", "The value stays marked sensitive as it propagates, hiding it from plan/apply output at every level"], a:3, e:"Sensitivity propagates through references so it doesn't leak into logs downstream."},
-    {q:"What's the purpose of a data block referencing a remote Terraform Cloud/HCP workspace's outputs?", o:["To trigger a run in another workspace remotely", "To copy an entire state file into the current workspace", "To read outputs from another Terraform run/workspace for cross-stack references", "To validate that two workspaces use the same provider versions"], a:2, e:"This is the standard pattern for splitting infrastructure into layered, cross-referencing stacks."},
-    {q:"When running Terraform non-interactively in CI/CD, which approach avoids Terraform prompting for approval?", o:["-no-prompt", "-ci-mode", "-skip-confirm", "-auto-approve (with plan/apply), or applying a pre-generated plan file"], a:3, e:"Automated pipelines typically use -auto-approve or apply a saved plan file to avoid interactive prompts."},
-    {q:"What's the key difference between 'terraform plan -destroy' and 'terraform destroy'?", o:["They are functionally identical commands", "plan -destroy deletes state; terraform destroy deletes infrastructure only", "terraform destroy requires a saved plan file, plan -destroy does not", "plan -destroy only previews what would be destroyed; terraform destroy actually executes it"], a:3, e:"plan -destroy is a safe, read-only preview of a destroy operation."},
-    {q:"What practice best avoids state file conflicts when multiple people run Terraform?", o:["Committing state files to Git with frequent small commits", "Disabling state entirely and using -target for everything", "Having each team member keep their own separate local state", "Using a remote backend with locking instead of committing local state to version control"], a:3, e:"Remote backends with locking are the standard way to coordinate concurrent Terraform runs safely."},
-    {q:"What does 'terraform init -upgrade' do?", o:["Upgrades the Terraform CLI binary itself", "Migrates state to a newer state file format only", "Re-downloads only the root module, ignoring child modules", "Upgrades provider and module versions to the latest allowed by version constraints"], a:3, e:"It re-resolves and updates dependencies within the bounds set by your version constraints."},
-    {q:"A resource is removed from configuration but still present in state. What happens if you don't run an apply?", o:["It's destroyed immediately upon saving the file", "Terraform automatically re-adds it to configuration", "It becomes permanently orphaned and untrackable", "Nothing changes yet in real infrastructure — the next apply will mark it for destruction"], a:3, e:"A plan will show the pending destroy, but nothing actually happens until you apply."},
-    {q:"What does count.index reference inside a resource using count?", o:["The total number of resources created", "The resource's unique cloud-assigned ID", "The position of the resource in the state file only", "The current iteration's numeric index, usable for naming or configuration"], a:3, e:"count.index is commonly interpolated into names or config values that need to vary per instance."},
-    {q:"When for_each iterates over a set created with toset(list), what does each.value equal?", o:["It's always empty for sets, unlike maps", "It returns the numeric index instead", "It returns a list of all elements, not just the current one", "It equals the current set element itself (same as each.key for a set)"], a:3, e:"For a set, each.key and each.value are identical — both are the current element."},
-    {q:"What is the coalesce() function commonly used for?", o:["Merges multiple maps into a single combined map", "Concatenates a list of strings with a separator", "Converts a string to a number, erroring on failure", "Returns the first non-null value from a list of expressions, useful for fallback defaults"], a:3, e:"coalesce(a, b, c) is a common pattern for defaulting to the first available value."},
-    {q:"What does declaring a variable as a strict object({...}) type achieve compared to using 'any'?", o:["It allows any value to be passed, bypassing validation entirely", "It has no effect; 'any' and object types behave identically", "It only affects documentation, not actual validation", "Terraform validates the input matches the exact structure, catching misconfigurations earlier"], a:3, e:"Strict typing surfaces structural mistakes at plan time instead of causing confusing runtime errors."},
-    {q:"What's the recommended approach for many nearly identical resources spread across files?", o:["Copy-paste the resource block repeatedly with minor edits", "Use only count with no module structure", "Manually manage each one via terraform import each time", "Encapsulate them in a reusable module and instantiate it with different variables/for_each"], a:3, e:"Modules plus for_each keep repeated infrastructure DRY and consistent."},
-    {q:"Why might 'terraform apply' show changes even though you didn't modify any .tf files?", o:["This should never happen; it indicates a bug in Terraform", "It means the state file has been deleted", "It only happens right after terraform init", "Provider defaults, computed attributes, or drift in real infrastructure can cause plan differences"], a:3, e:"Real-world drift or provider-side changes can surface as a diff even without config edits."},
-    {q:"What's a downside of hardcoding an AWS account ID or region directly inside many resource blocks?", o:["It has no downside if the values never change", "It improves apply performance significantly", "It's required for most providers to function at all", "It makes the configuration less portable/reusable across accounts or regions"], a:3, e:"Variables or data sources keep configurations reusable across environments."},
-    {q:"What's the purpose of a 'validation' block inside a variable definition?", o:["Automatically corrects invalid input to a default value", "Encrypts the variable's value at rest", "Documents the variable without affecting plan/apply behavior", "Enforces custom rules on the variable's value, failing with a custom error message if violated"], a:3, e:"Validation blocks catch bad input early with a clear, custom error message."},
-    {q:"What does the -parallelism=N flag on terraform apply control?", o:["Sets the number of workspaces processed in parallel", "Limits the number of provider plugins loaded at once", "Controls how many state backups are kept", "How many resource operations Terraform executes concurrently"], a:3, e:"Lowering parallelism can help avoid rate-limiting from cloud provider APIs."},
-    {q:"What's the purpose of 'depends_on' specifically on a module block?", o:["Marks the module as deprecated for future runs", "Disables parallel execution for the entire configuration", "Automatically imports the module's remote state", "Forces the module's resources to wait on dependencies not captured through direct references"], a:3, e:"Same purpose as on a resource, but applied to everything inside the module as a unit."},
-    {q:"In Terraform Cloud / HCP Terraform, what is a 'run' typically composed of?", o:["A single terraform validate execution only", "A scheduled backup of the state file", "A billing cycle for workspace usage", "A plan followed by an (optionally approved) apply, executed remotely"], a:3, e:"Runs are the core execution unit for remote, collaborative Terraform workflows."},
-    {q:"What's the purpose of policy-as-code tools like Sentinel or OPA in a Terraform pipeline?", o:["To automatically write Terraform code from policy documents", "To replace the need for terraform plan entirely", "To manage provider authentication centrally", "To enforce organizational rules (cost limits, tagging, security) automatically before allowing an apply"], a:3, e:"Policy-as-code gates applies against rules the organization defines, independent of the code author."},
-    {q:"What does combining 'terraform state list' with grep help you do?", o:["Automatically delete resources matching a pattern", "Encrypt matching resources in state", "Generate a plan limited to matching resources", "Locate specific resource addresses in a large state file for further state commands"], a:3, e:"It's a quick way to find the exact address needed for a state mv/rm/show operation."},
-    {q:"Why might a team split a large Terraform codebase into multiple smaller state files (state isolation)?", o:["It's required by Terraform once a project exceeds 10 resources", "It removes the need for remote backends entirely", "It automatically improves security without any other changes", "It reduces blast radius, speeds up plan/apply, and limits state-locking impact on unrelated teams"], a:3, e:"Smaller, isolated states mean a mistake or a lock in one area doesn't block everyone else."},
-    {q:"What's the purpose of an alias in a provider block for a multi-account AWS setup?", o:["Renames the provider for display purposes only", "Enables a provider to manage multiple cloud vendors at once", "Is required for every provider, even single-account setups", "Lets you define multiple named provider configurations (e.g., per-account) usable by different resources/modules"], a:3, e:"Aliases are the standard way to target multiple accounts or regions with the same provider type."},
-    {q:"What's best practice when a 'terraform apply' partially fails midway (some resources created, others not)?", o:["Immediately delete the entire state file and start over", "Manually edit the .tf files until the error message disappears", "Switch to a different workspace and ignore the partial state", "Review the state (now partially updated) and re-run plan/apply to reconcile rather than manually deleting state"], a:3, e:"State accurately reflects what was actually created; re-running plan/apply is the safe path to reconcile."}
+    {
+      q:"Why maintain separate .tfvars files per environment (dev.tfvars, prod.tfvars)?", o:["To physically separate state files, with no other benefit", "To bypass the need for a backend configuration", "To pass different variable values per environment while reusing the same configuration", "To allow each environment to use a different HCL syntax version"], a:2,
+      e:"Variable definition files supply environment-specific inputs such as region, capacity, and naming while the same resource/module code is reused. Files named dev.tfvars or prod.tfvars must be selected explicitly with -var-file.",
+      r:["Changing variable values does not select a different state; backend/workspace isolation must be configured separately.", "Input files do not replace backend configuration or initialize state storage.", "Correct: the configuration stays reusable while deployment values vary.", "All files are interpreted by the selected Terraform CLI; tfvars does not select an HCL version."],
+      tip:"Run terraform plan -var-file=dev.tfvars only after confirming the correct backend/workspace. Accidentally supplying production values to development state can propose replacements; never commit secret-bearing variable files.",
+      doc:"Input variables: variable definition files", url:"https://developer.hashicorp.com/terraform/language/values/variables#variable-definition-files"
+    },
+    {
+      q:"What does 'terraform workspace show' do?", o:["Lists all workspaces and their resource counts", "Shows the state file contents of a workspace", "Displays billing information per workspace", "Prints the name of the currently selected workspace"], a:3,
+      e:"terraform workspace show prints the current CLI workspace name for the initialized working directory. Workspaces provide distinct state instances within a backend, so this is a useful context check before planning or applying.",
+      r:["workspace list lists available names, but neither command adds resource counts automatically.", "Use terraform show or state subcommands to inspect state contents.", "Workspace selection commands do not query cloud billing information.", "Correct: the output is the currently selected workspace name, such as default or dev."],
+      tip:"Check workspace show alongside the active cloud account and backend key. A workspace name is not proof of account isolation, and CLI workspaces should not be confused with HCP Terraform workspace execution settings.",
+      doc:"terraform workspace show command", url:"https://developer.hashicorp.com/terraform/cli/commands/workspace/show"
+    },
+    {
+      q:"In a multi-region setup using provider aliases, how do you pass the aliased provider into a child module?", o:["Using the 'providers' argument in the module block to map the alias to the module's expected provider", "Aliases are inherited automatically with no configuration needed", "By duplicating the provider block inside the child module", "Provider aliases cannot be passed into modules"], a:0,
+      e:"A module's providers map connects the child's local provider names to configurations in its caller. For example, providers = { aws = aws.west } supplies the parent's west-region configuration as the child's default AWS provider.",
+      r:["Correct: the mapping explicitly determines which provider configuration the child uses.", "Default configurations may be inherited, but aliased configurations must be passed explicitly.", "Defining provider blocks inside reusable children is a legacy pattern and can prevent use with module count/for_each/depends_on.", "Passing aliases is supported and is central to multi-region and multi-account module reuse."],
+      tip:"If a child directly expects aws.replica, declare that alias in its required_providers configuration_aliases and pass a matching map entry. No child alias declaration is needed merely to map the parent's alias to the child's default aws.",
+      doc:"Module providers argument: passing aliases", url:"https://developer.hashicorp.com/terraform/language/meta-arguments/providers"
+    },
+    {
+      q:"Why export module outputs and re-expose them at the root level?", o:["It's required for the module to apply successfully", "To reduce the module's overall resource count", "To make values computed within a module available to other modules or as final config outputs", "To bypass state locking for that module"], a:2,
+      e:"Child outputs form a module's public interface, referenced as module.name.output_name. Root outputs can re-export selected child values for CLI users, automation, and consumers that read the root's state outputs.",
+      r:["A module can create resources without declaring any outputs.", "Outputs expose values and do not change the number of managed resources.", "Correct: child outputs enable composition and root outputs publish the final configuration interface.", "Outputs do not alter backend locking or grant exceptions for a module."],
+      tip:"A sibling module can use a child output through the parent's wiring without a root output block. Re-export it at the root when CLI or remote-state consumers need it, and mark secret-derived outputs sensitive.",
+      doc:"Output values: child and root interfaces", url:"https://developer.hashicorp.com/terraform/language/values/outputs"
+    },
+    {
+      q:"What's a key risk of storing state locally in a team setting?", o:["Local state is always encrypted, unlike remote state", "Local state automatically syncs across machines", "There is no risk; local state is recommended for teams", "No shared state means team members can conflict or overwrite each other's changes without a lock"], a:3,
+      e:"Independent local state copies give different operators inconsistent records of the same infrastructure. Local backend locking protects a local file but does not coordinate separate copies across laptops; a shared locking backend provides a common coordination point.",
+      r:["Local state is ordinarily plaintext; remote encryption depends on the selected backend and configuration.", "Terraform does not automatically synchronize independent local state files.", "Local state can be suitable for isolated work, but independent team copies create coordination and recovery risks.", "Correct: without shared authoritative state and coordinated locking, operators can race or lose ownership information."],
+      tip:"Use a shared backend with locking, least-privilege access, encryption, and recoverable versions. Do not solve collaboration by placing sensitive state in Git or a consumer file-sync folder.",
+      doc:"Remote state: collaboration and storage", url:"https://developer.hashicorp.com/terraform/language/state/remote"
+    },
+    {
+      q:"What does enabling S3 bucket versioning for a remote state bucket protect against?", o:["Speeds up terraform plan execution", "Automatically encrypts secrets within the state", "Enables multi-region replication of resources", "Accidental state corruption or deletion, by keeping prior versions recoverable"], a:3,
+      e:"S3 versioning retains multiple versions of an object when it is overwritten and normally creates a delete marker for ordinary deletion. Earlier state-object versions can therefore support recovery after accidental overwrites or deletion.",
+      r:["Retaining object history is a recovery feature, not a plan-performance optimization.", "Versioning is separate from bucket/object encryption and does not redact secret fields.", "Versioning does not replicate managed infrastructure; S3 replication is also a separate feature.", "Correct: retained versions provide recovery points, subject to permissions, lifecycle rules, and permanent deletion."],
+      tip:"Restrict permission to delete historical versions and test recovery procedures. Restoring old state does not roll back cloud resources, so reconcile the restored snapshot with current infrastructure before applying.",
+      doc:"Amazon S3: using versioning", url:"https://docs.aws.amazon.com/AmazonS3/latest/userguide/Versioning.html"
+    },
+    {
+      q:"What's a benefit of running 'terraform plan' as part of a pull request check in CI?", o:["It automatically applies the changes once the PR is opened", "It replaces the need for code review entirely", "It only checks HCL syntax, not actual infrastructure impact", "Reviewers can see the proposed infrastructure impact before merging, catching unintended changes"], a:3,
+      e:"A plan compares configuration, prior state, and refreshed provider data to propose creates, updates, replacements, and deletions. Publishing a reviewed summary in a pull request makes destructive or unexpected actions visible before approval.",
+      r:["Planning does not perform the proposed resource changes; an apply is a separate step.", "A plan complements code review and policy checks but cannot assess every operational or business consequence.", "Unlike syntax-only checks, plan evaluates intended infrastructure changes using provider information.", "Correct: reviewers can inspect the proposed actions, although unknown values and later drift still matter."],
+      tip:"Apply the approved saved plan where practical; a newly generated plan may differ after drift or code changes. Protect plan artifacts and avoid giving untrusted pull-request code unrestricted cloud credentials.",
+      doc:"Running Terraform in automation: plan and apply", url:"https://developer.hashicorp.com/terraform/tutorials/automation/automate-terraform"
+    },
+    {
+      q:"What happens to the 'sensitive' marking on an output when it's referenced by another module?", o:["Sensitivity is lost once passed to another module", "The value is automatically encrypted at rest in state", "It prevents the value from being used at all downstream", "The value stays marked sensitive as it propagates, hiding it from normal plan/apply display"], a:3,
+      e:"Terraform propagates sensitivity through expressions and module references, so derived values are generally redacted in normal human-readable plan/apply output. Root outputs that expose sensitive data must explicitly acknowledge it with sensitive = true.",
+      r:["Passing a marked value through a normal module reference does not automatically remove its sensitivity.", "Sensitive is display metadata, not encryption; state and saved plans can still contain the value.", "Sensitive values can be used in supported contexts, though they cannot be exposed as for_each instance keys.", "Correct for normal displays: the marking follows references, but it does not guarantee secrecy in every output channel."],
+      tip:"terraform output -raw/-json and terraform show -json can reveal sensitive values. Protect state, plans, and logs, and do not use nonsensitive unless declassification is intentional and safe.",
+      doc:"Manage sensitive data: propagation and limitations", url:"https://developer.hashicorp.com/terraform/language/manage-sensitive-data"
+    },
+    {
+      q:"What's the purpose of a data block referencing a remote Terraform Cloud/HCP workspace's outputs?", o:["To trigger a run in another workspace remotely", "To copy an entire state file into the current workspace", "To read outputs from another Terraform run/workspace for cross-stack references", "To validate that two workspaces use the same provider versions"], a:2,
+      e:"An outputs data source, such as tfe_outputs, reads published root output values from an HCP Terraform workspace. It lets independently deployed stacks share interfaces such as VPC IDs without placing all resources in one state.",
+      r:["Reading outputs does not itself queue a deployment; run triggers and API operations handle orchestration.", "An outputs-specific data source does not merge or copy the upstream state into the downstream state.", "Correct: it supplies values produced by a different workspace for configuration composition.", "Provider consistency is managed through constraints and lock files, not by reading stack outputs."],
+      tip:"Grant only the required workspace/output permissions. Prefer tfe_outputs over full remote-state access when appropriate; reading an output does not automatically apply the upstream workspace or guarantee its values are up to date.",
+      doc:"TFE provider: tfe_outputs data source", url:"https://registry.terraform.io/providers/hashicorp/tfe/latest/docs/data-sources/outputs"
+    },
+    {
+      q:"When running Terraform non-interactively in CI/CD, which approach avoids Terraform prompting for approval?", o:["-no-prompt", "-ci-mode", "-skip-confirm", "terraform apply -auto-approve, or applying a pre-generated plan file"], a:3,
+      e:"terraform apply -auto-approve skips the interactive approval prompt for an automatically generated plan. Applying a saved plan already counts as approval, so terraform apply tfplan executes it without a separate confirmation.",
+      r:["There is no -no-prompt approval flag; -input=false disables input prompts but does not approve an apply.", "There is no -ci-mode option that approves changes.", "There is no -skip-confirm apply flag.", "Correct: both supported approaches avoid interactive approval; -auto-approve belongs to apply, not plan."],
+      tip:"Use pipeline approvals before applying a reviewed saved plan and supply all required variables non-interactively. Skipping the CLI prompt is not a substitute for authorization, policy checks, or protecting the plan artifact.",
+      doc:"terraform apply: saved plans and automatic approval", url:"https://developer.hashicorp.com/terraform/cli/commands/apply"
+    },
+    {
+      q:"What's the key difference between 'terraform plan -destroy' and 'terraform destroy'?", o:["They are functionally identical commands", "plan -destroy deletes state; terraform destroy deletes infrastructure only", "terraform destroy requires a saved plan file, plan -destroy does not", "plan -destroy only previews what would be destroyed; terraform destroy actually executes it"], a:3,
+      e:"terraform plan -destroy proposes deletion of managed resources without executing those deletions. terraform destroy is a convenience command for apply in destroy mode and, after approval, performs destruction and records the results in state.",
+      r:["One produces a proposal; the other executes a destructive workflow.", "A destroy plan does not delete state, and actual destruction updates state as resources are removed.", "destroy does not require or accept a saved-plan argument; apply is used to execute a saved destroy plan.", "Correct: preview and execution are distinct, even though both use destroy planning mode."],
+      tip:"For reviewed destruction, run terraform plan -destroy -out=destroy.out, inspect it with terraform show destroy.out, then run terraform apply destroy.out. Applying that artifact does not prompt again.",
+      doc:"terraform destroy command and destroy planning mode", url:"https://developer.hashicorp.com/terraform/cli/commands/destroy"
+    },
+    {
+      q:"What practice best avoids state file conflicts when multiple people run Terraform?", o:["Committing state files to Git with frequent small commits", "Disabling state entirely and using -target for everything", "Having each team member keep their own separate local state", "Using a remote backend with locking instead of committing local state to version control"], a:3,
+      e:"A locking backend coordinates operations against a shared authoritative state, preventing simultaneous writers from corrupting its ownership records. Terraform acquires the backend lock automatically for operations that require it when supported and enabled.",
+      r:["Git cannot lock live Terraform operations and would expose sensitive state history.", "Terraform needs state for managed resources; -target neither disables it nor solves synchronization.", "Independent state copies lose a common record and cannot coordinate writes to the same infrastructure.", "Correct: shared storage plus enabled locking addresses both visibility and concurrent-state writes."],
+      tip:"Not every backend supports locking, and some require explicit enablement, such as S3 use_lockfile. Never disable a lock or force-unlock it merely to bypass an active run; first confirm the lock is stale.",
+      doc:"Terraform state locking", url:"https://developer.hashicorp.com/terraform/language/state/locking"
+    },
+    {
+      q:"What does 'terraform init -upgrade' do?", o:["Upgrades the Terraform CLI binary itself", "Migrates state to a newer state file format only", "Re-downloads only the root module, ignoring child modules", "Upgrades provider and module versions to the latest allowed by version constraints"], a:3,
+      e:"Initialization with -upgrade reconsiders installed dependency selections. It can select newer provider releases allowed by required_providers constraints and update installed modules according to their sources and applicable version constraints.",
+      r:["The CLI executable is updated by your installer or version manager, not by init.", "Its purpose is dependency installation/selection, not a state-format-only migration.", "The existing root configuration is not the package being upgraded; child module and provider installation are included.", "Correct: allowed newer dependencies are selected; exact pins and source references still limit what can change."],
+      tip:"Review provider lock-file changes and run a fresh plan after upgrading. The dependency lock file records providers, not remote module selections, so pin module versions or immutable source references separately.",
+      doc:"terraform init: upgrade behavior", url:"https://developer.hashicorp.com/terraform/cli/commands/init"
+    },
+    {
+      q:"A resource is removed from configuration but still present in state. What happens if you don't run an apply?", o:["It's destroyed immediately upon saving the file", "Terraform automatically re-adds it to configuration", "It becomes permanently orphaned and untrackable", "Nothing changes yet in real infrastructure; the next plan normally proposes destruction for a subsequent apply"], a:3,
+      e:"Editing configuration does not immediately change cloud infrastructure. If state still binds an object to a resource block that is now absent, normal planning treats it as no longer desired and proposes destroying it; apply executes the reviewed actions.",
+      r:["Terraform is not a file-save watcher that immediately deletes remote objects.", "Terraform does not rewrite configuration to restore removed resource blocks.", "The state still tracks the object, so it remains inspectable and manageable.", "Correct: removal is a desired-state change; deletion happens only when an applicable plan is applied."],
+      tip:"If the goal is to stop managing an object without deleting it, use a supported removed block with destroy = false or a carefully coordinated state rm. Do not just delete its configuration and approve the next plan.",
+      doc:"Resource lifecycle: applying additions, updates, and removals", url:"https://developer.hashicorp.com/terraform/language/resources#apply-the-configuration"
+    },
+    {
+      q:"What does count.index reference inside a resource using count?", o:["The total number of resources created", "The resource's unique cloud-assigned ID", "The position of the resource in the state file only", "The current iteration's numeric index, usable for naming or configuration"], a:3,
+      e:"count.index is the zero-based number for the current count-created instance. A block with count = 3 has indexes 0, 1, and 2, which can select input-list entries or create per-instance names.",
+      r:["The count expression specifies the total; count.index identifies one instance.", "Cloud IDs are provider-returned attributes, not Terraform's numeric instance indexes.", "It is part of the Terraform instance address and expression context, not a physical state-file position.", "Correct: an expression such as \"worker-${count.index}\" varies each instance's arguments."],
+      tip:"Index zero is the first instance, not one. If arguments come from a reorderable list, index-based identity can cause unwanted replacements; use keyed for_each when identity matters.",
+      doc:"count reference: count.index", url:"https://developer.hashicorp.com/terraform/language/meta-arguments/count#referring-to-instances"
+    },
+    {
+      q:"When for_each iterates over a set created with toset(list), what does each.value equal?", o:["It's always empty for sets, unlike maps", "It returns the numeric index instead", "It returns a list of all elements, not just the current one", "It equals the current set element itself (same as each.key for a set)"], a:3,
+      e:"Resource for_each accepts a set of strings as well as a map. Sets have no separate key/value pairing, so both each.key and each.value are the current string member, which identifies the instance.",
+      r:["A set member supplies a value normally; sets are not empty-valued maps.", "Sets have no stable numeric indexes; count supplies numeric index identity.", "each describes one instance, not the entire input collection.", "Correct: for toset([\"dev\", \"prod\"]), both fields equal dev for the dev instance."],
+      tip:"toset removes duplicates and discards list order. Resource for_each requires strings for set members; turn a list of objects into a map with stable unique keys instead of passing a set of objects.",
+      doc:"for_each: using sets", url:"https://developer.hashicorp.com/terraform/language/meta-arguments/for_each#using-sets"
+    },
+    {
+      q:"What is the coalesce() function commonly used for?", o:["Merges multiple maps into a single combined map", "Concatenates a list of strings with a separator", "Converts a string to a number, erroring on failure", "Returns the first value that is neither null nor an empty string, useful for fallback defaults"], a:3,
+      e:"coalesce returns the first argument that is not null or an empty string. Arguments must have compatible types, potentially using automatic conversion; an error is returned if no suitable value exists.",
+      r:["merge combines maps/objects; coalesce selects a single candidate value.", "join combines sequence elements into a string with a separator.", "tonumber performs numeric conversion; coalesce is a fallback-selection function.", "Correct: coalesce(var.display_name, \"default-name\") skips null and empty-string candidates."],
+      tip:"It does not catch errors like try and does not skip false, zero, or empty collections merely because they seem absent. Mixing types can trigger surprising conversions; use compatible candidates and an intentional fallback.",
+      doc:"coalesce function: null, empty strings, and conversion", url:"https://developer.hashicorp.com/terraform/language/functions/coalesce"
+    },
+    {
+      q:"What does declaring a variable as an object({...}) type achieve compared to using 'any'?", o:["It allows any value to be passed, bypassing validation entirely", "It has no effect; 'any' and object types behave identically", "It only affects documentation, not actual validation", "Terraform validates required attributes and their types, catching structural misconfigurations earlier"], a:3,
+      e:"An object type constraint declares named attributes and their expected types, allowing Terraform to validate and convert input values at the module boundary. any is a placeholder for type inference, not an explicit object schema.",
+      r:["The object schema adds constraints rather than bypassing them.", "any does not define the same required named attributes as an object constraint.", "Type constraints affect evaluation and validation, not just generated documentation.", "Correct: missing required attributes and incompatible values are caught, subject to Terraform's conversion rules."],
+      tip:"An object constraint is not an exact-key validator: extra input attributes can be discarded during conversion. Optional attributes and convertible primitive types are supported; use custom validation for additional semantic restrictions.",
+      doc:"Type constraints: structural types and conversions", url:"https://developer.hashicorp.com/terraform/language/expressions/type-constraints#structural-types"
+    },
+    {
+      q:"What's the recommended approach for many nearly identical resources spread across files?", o:["Copy-paste the resource block repeatedly with minor edits", "Use only count with no module structure", "Manually manage each one via terraform import each time", "Encapsulate them in a reusable module and instantiate it with different variables/for_each"], a:3,
+      e:"Modules group a meaningful infrastructure capability behind a typed input/output interface. Calling the same module with different inputs, optionally using for_each, shares implementation while preserving independently addressed instances.",
+      r:["Copying blocks spreads fixes and policy changes across duplicated code, increasing inconsistency risk.", "count can reduce a single repeated block, but it does not by itself package a reusable multi-resource capability.", "Import adopts pre-existing objects into state; it is not a replacement for configuration reuse.", "Correct: reusable modules centralize common behavior while callers supply differences."],
+      tip:"Keep modules cohesive rather than wrapping every resource mechanically. Splitting .tf files within one directory does not create modules or separate state; introducing module paths for existing resources needs address migration.",
+      doc:"Module composition: reusable infrastructure abstractions", url:"https://developer.hashicorp.com/terraform/language/modules/develop/composition"
+    },
+    {
+      q:"Why might 'terraform apply' show changes even though you didn't modify any .tf files?", o:["This should never happen; it indicates a bug in Terraform", "It means the state file has been deleted", "It only happens right after terraform init", "Provider defaults, computed attributes, or drift in real infrastructure can cause plan differences"], a:3,
+      e:"Applying without a saved plan first creates a plan using current inputs, refreshed remote values, and provider behavior. External changes, different variable values, changed data sources, or provider upgrades can alter the result without editing resource code.",
+      r:["Terraform detects real-world changes by design; a diff is not automatically a bug.", "Missing state is one possible serious scenario, but ordinary drift does not imply state was deleted.", "Remote changes and input changes can occur at any time, not only after initialization.", "Correct: the desired/observed comparison depends on more than static .tf file contents."],
+      tip:"Inspect the plan, selected account/workspace, input values, and dependency versions before approving. A computed-only value update is not necessarily a remote mutation; avoid blanket ignore_changes to hide unexplained differences.",
+      doc:"Terraform plan: refresh and planning behavior", url:"https://developer.hashicorp.com/terraform/cli/commands/plan"
+    },
+    {
+      q:"What's a downside of hardcoding an AWS account ID or region directly inside many resource blocks?", o:["It has no downside if the values never change", "It improves apply performance significantly", "It's required for most providers to function at all", "It makes the configuration less portable/reusable across accounts or regions"], a:3,
+      e:"Repeating account- and region-specific constants couples reusable code to one deployment context. Inputs, provider configurations, and suitable data sources centralize that context and reduce inconsistent edits across environments.",
+      r:["Even stable constants can impede reuse and create maintenance mistakes when copied into another environment.", "Hardcoding these values does not provide a meaningful general apply-performance benefit.", "Providers can obtain settings from variables and documented credential/configuration sources.", "Correct: environment-specific literals make moving or reusing the same configuration harder."],
+      tip:"Use region inputs and aliases, and read the authenticated account with aws_caller_identity when appropriate. For a required target account, use an explicit expected-account guard; discovering an ID does not verify that you logged into the right account.",
+      doc:"Parameterize configuration with input variables", url:"https://developer.hashicorp.com/terraform/language/values/variables"
+    },
+    {
+      q:"What's the purpose of a 'validation' block inside a variable definition?", o:["Automatically corrects invalid input to a default value", "Encrypts the variable's value at rest", "Documents the variable without affecting plan/apply behavior", "Enforces custom rules on the variable's value, failing with a custom error message if violated"], a:3,
+      e:"Variable validation evaluates a condition over an input and reports its error_message when false. It complements type constraints with semantic rules, such as a permitted environment name or a positive capacity limit.",
+      r:["Validation rejects invalid values instead of silently substituting a default.", "It does not encrypt data or replace sensitive marking and backend security.", "Validation is executable and can stop a run, not merely document a preferred value.", "Correct: it turns module-input assumptions into explicit, actionable errors."],
+      tip:"Use contains([\"dev\", \"prod\"], var.environment) for an allowlist and write an error explaining the fix. Validation often runs during planning but may be deferred if values are unknown; never include secrets in error messages.",
+      doc:"Custom conditions: input variable validation", url:"https://developer.hashicorp.com/terraform/language/validate#input-variable-validation"
+    },
+    {
+      q:"What does the -parallelism=N flag on terraform apply control?", o:["Sets the number of workspaces processed in parallel", "Limits the number of provider plugins loaded at once", "Controls how many state backups are kept", "How many resource operations Terraform executes concurrently"], a:3,
+      e:"-parallelism sets the maximum number of concurrent operations as Terraform walks its dependency graph; the default is 10. Only operations whose prerequisites are satisfied can run together.",
+      r:["A CLI apply operates on the selected configuration/state, not a batch of workspaces.", "It limits graph operations rather than the number of installed or loaded provider binaries.", "State backup retention is a storage/backend concern.", "Correct: it bounds operation concurrency, although one provider operation may issue multiple API requests."],
+      tip:"Lower it when cloud API throttling is a problem, accepting longer runs. It is not a requests-per-second limiter and does not bypass dependencies; provider retries and service quotas also affect throughput.",
+      doc:"terraform apply: parallelism option", url:"https://developer.hashicorp.com/terraform/cli/commands/apply#parallelism-n"
+    },
+    {
+      q:"What's the purpose of 'depends_on' specifically on a module block?", o:["Marks the module as deprecated for future runs", "Disables parallel execution for the entire configuration", "Automatically imports the module's remote state", "Forces the module's resources to wait on dependencies not captured through direct references"], a:3,
+      e:"Module-level depends_on declares a hidden dependency for the module as a whole, affecting its resources and data sources. It makes Terraform complete prerequisite actions, including reads, before scheduling dependent operations according to the graph.",
+      r:["Deprecation is communicated through documentation/versioning, not a dependency edge.", "Unrelated graph branches can still execute in parallel.", "Dependency declarations do not import objects or read remote-state outputs.", "Correct: it expresses necessary ordering that Terraform cannot infer from value references alone."],
+      tip:"Prefer passing a specific resource attribute into the child whenever that captures the dependency. Broad module dependencies can defer data-source reads and create conservative plans with more unknown values.",
+      doc:"depends_on reference: module dependencies and planning", url:"https://developer.hashicorp.com/terraform/language/meta-arguments/depends_on"
+    },
+    {
+      q:"In Terraform Cloud / HCP Terraform, what is a 'run' typically composed of?", o:["A single terraform validate execution only", "A scheduled backup of the state file", "A billing cycle for workspace usage", "A plan followed by an optional apply, executed through the hosted workflow"], a:3,
+      e:"An HCP Terraform run typically plans a configuration and may proceed through checks, policies, and approval to apply it. Speculative plans and plan-only runs do not apply changes, while an eligible normal run can apply automatically or after approval.",
+      r:["Validation can be part of a run but is not the full infrastructure-change workflow.", "State version storage is associated with execution, but a run is not merely a backup job.", "The run lifecycle describes Terraform execution, not a billing interval.", "Correct: plan and an optional apply are the core phases, with execution affected by workspace settings."],
+      tip:"Do not expect a pull request's speculative plan to deploy infrastructure. Review the run mode, workspace execution settings, policies, and approval requirements; remote or agent execution still needs appropriate credentials.",
+      doc:"HCP Terraform run workflow and run types", url:"https://developer.hashicorp.com/terraform/cloud-docs/workspaces/run/manage"
+    },
+    {
+      q:"What's the purpose of policy-as-code tools like Sentinel or OPA in a Terraform pipeline?", o:["To automatically write Terraform code from policy documents", "To replace the need for terraform plan entirely", "To manage provider authentication centrally", "To enforce organizational rules (cost limits, tagging, security) automatically before allowing an apply"], a:3,
+      e:"Policy-as-code evaluates machine-readable configuration, plan, or other run data against organizational rules. In HCP Terraform, policy enforcement can warn, require override, or block progression depending on the policy system and enforcement configuration.",
+      r:["Policies evaluate compliance; they do not normally generate the infrastructure configuration.", "Plans often supply the very resource-change data that policies inspect.", "Authentication and secret delivery are separate concerns from compliance evaluation.", "Correct: required tags, forbidden configurations, and budget-related rules can be checked before approval or apply."],
+      tip:"A policy is only a gate when the pipeline actually enforces its result. Account for unknown planned values, permitted overrides, and coverage gaps; policy checks complement cloud IAM and runtime controls rather than replacing them.",
+      doc:"HCP Terraform policy enforcement: Sentinel and OPA", url:"https://developer.hashicorp.com/terraform/cloud-docs/policy-enforcement"
+    },
+    {
+      q:"What does combining 'terraform state list' with grep help you do?", o:["Automatically delete resources matching a pattern", "Encrypt matching resources in state", "Generate a plan limited to matching resources", "Locate specific resource addresses in a large state file for further state commands"], a:3,
+      e:"terraform state list prints the addresses tracked in the current state. Filtering that text with grep, or Select-String in PowerShell, helps locate exact module/resource instance addresses for inspection or carefully planned state maintenance.",
+      r:["Listing and filtering output are read-only; deletion would require a separate command.", "Text filtering neither encrypts state nor changes its stored contents.", "A filtered list is not a plan and does not activate resource targeting.", "Correct: it helps discover addresses such as module.web.aws_instance.server[\"prod\"]."],
+      tip:"In PowerShell use terraform state list | Select-String 'resource_group'. Quote keyed addresses correctly before state show/mv/rm, and remember state rm forgets ownership without deleting the actual cloud object.",
+      doc:"terraform state list: filtering and resource addresses", url:"https://developer.hashicorp.com/terraform/cli/commands/state/list"
+    },
+    {
+      q:"Why might a team split a large Terraform codebase into multiple smaller state files (state isolation)?", o:["It's required by Terraform once a project exceeds 10 resources", "It removes the need for remote backends entirely", "It automatically improves security without any other changes", "It reduces blast radius, can speed up scoped plan/apply, and limits state-locking impact on unrelated teams"], a:3,
+      e:"Separate root configurations with distinct state locations create independent ownership and deployment boundaries. Each operation can inspect a smaller graph, and a lock or failure in one stack need not block an unrelated stack.",
+      r:["Terraform has no ten-resource limit requiring state splitting.", "Teams still need shared secure storage and locking for each state.", "Isolation alone does not establish access control; permissions and credentials must also be separated.", "Correct: sensible boundaries reduce operational coupling, though performance gains depend on the architecture."],
+      tip:"Split by lifecycle, ownership, or trust boundary rather than creating a state for every resource. Plan cross-stack outputs and deployment order explicitly; child modules alone do not create separate state files.",
+      doc:"HCP Terraform workspace design and state boundaries", url:"https://developer.hashicorp.com/terraform/cloud-docs/workspaces"
+    },
+    {
+      q:"What's the purpose of an alias in a provider block for a multi-account AWS setup?", o:["Renames the provider for display purposes only", "Enables a provider to manage multiple cloud vendors at once", "Is required for every provider, even single-account setups", "Lets you define multiple named provider configurations (e.g., per-account) usable by different resources/modules"], a:3,
+      e:"An alias distinguishes multiple configurations of the same provider type. For example, aws.audit and aws.workload can use different regions, profiles, or assumed roles while sharing the installed AWS provider version.",
+      r:["Aliases affect which configured credentials/region handle operations, not just display labels.", "Different cloud vendors require their respective provider types; an AWS alias is still AWS.", "An unaliased default provider configuration is valid and often sufficient.", "Correct: resources select an alias with provider = aws.audit and modules receive it through a providers map."],
+      tip:"An alias name does not select an account by itself: configure and verify the corresponding credentials or role. If every configuration is aliased, a resource that forgets provider selection can use an unintended empty default configuration.",
+      doc:"Provider configuration: aliases and default selection", url:"https://developer.hashicorp.com/terraform/language/block/provider#multiple-provider-configurations"
+    },
+    {
+      q:"What's best practice when a 'terraform apply' partially fails midway (some resources created, others not)?", o:["Immediately delete the entire state file and start over", "Manually edit the .tf files until the error message disappears", "Switch to a different workspace and ignore the partial state", "Review recorded state and actual infrastructure, fix the failure, then re-run plan/apply to reconcile"], a:3,
+      e:"Terraform apply is not an all-or-nothing transaction: successful operations are normally recorded even when a later operation fails. Review the diagnostic, current state, and remote objects, correct the root cause, and generate a new plan for the remaining work.",
+      r:["Deleting state discards records of successful creation and can cause duplicate resources or ownership loss.", "Configuration changes should address the real failure, not merely suppress its error message.", "Another workspace has different state and does not reconcile the partially completed deployment.", "Correct: deliberate reconciliation preserves tracked progress without assuming automatic rollback."],
+      tip:"If an API created an object before returning an error, it may exist without a recorded binding; verify and import it if appropriate. If state persistence itself failed, preserve recovery files and follow state-recovery instructions before retrying.",
+      doc:"Terraform apply: errors and partial completion", url:"https://developer.hashicorp.com/terraform/cli/commands/apply"
+    }
   ]
 };
 
@@ -286,6 +652,12 @@ function pickAnswer(idx) {
   saveState(); render();
 }
 
+function escapeHtml(value) {
+  return value.replace(/[&<>"']/g, character => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  }[character]));
+}
+
 function renderQCard() {
   const holder = document.getElementById('qcardHolder');
   const list = DATA[currentPart];
@@ -312,22 +684,33 @@ function renderQCard() {
       else if (i === q.a) cls += ' reveal-correct';
     }
     return `<button class="${cls}" ${rec ? 'disabled' : ''} onclick="pickAnswer(${i})">
-      <span class="letter">${letters[i]}</span><span>${opt}</span>
+      <span class="letter">${letters[i]}</span><span>${escapeHtml(opt)}</span>
     </button>`;
   }).join('');
 
   let feedbackHtml = '';
   if (rec) {
     feedbackHtml = `<div class="feedback ${rec.correct ? 'correct' : 'incorrect'}">
-      ${rec.correct ? '✓ Correct' : '✗ Incorrect — correct answer: ' + q.o[q.a]}
-      <div class="explain">${q.e}</div>
+      ${rec.correct ? '✓ Correct' : '✗ Incorrect — correct answer: ' + escapeHtml(q.o[q.a])}
+      <div class="explain">
+        <h3>Underlying concept</h3>
+        <p>${escapeHtml(q.e)}</p>
+        <h3>Why each option is correct or incorrect</h3>
+        <ul class="answer-analysis">
+          ${q.r.map((reason, i) => `<li><strong>${letters[i]}. ${escapeHtml(q.o[i])}</strong><p>${escapeHtml(reason)}</p></li>`).join('')}
+        </ul>
+        <h3>Real-world use and pitfalls</h3>
+        <p>${escapeHtml(q.tip)}</p>
+        <h3>Official documentation</h3>
+        <a href="${escapeHtml(q.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(q.doc)} (opens in a new tab)</a>
+      </div>
     </div>`;
   }
 
   holder.innerHTML = `
     <div class="qcard">
       <div class="qmeta">Question ${currentIndex + 1} of ${list.length} — Part ${currentPart}</div>
-      <p class="qtext">${q.q}</p>
+      <p class="qtext">${escapeHtml(q.q)}</p>
       <div class="options">${optionsHtml}</div>
       ${feedbackHtml}
       <div class="nav-row">

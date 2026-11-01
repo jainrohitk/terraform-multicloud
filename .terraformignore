@@ -1,0 +1,22 @@
+# Version control metadata
+**/.git/
+
+# Local Terraform data; retain modules needed by remote runs.
+**/.terraform/*
+!**/.terraform/modules/
+!**/.terraform/modules/**
+
+# State, saved plans, and diagnostic output
+**/*.tfstate
+**/*.tfstate.*
+**/*.tfplan
+**/tfplan
+**/crash.log
+**/crash.*.log
+**/*.out
+
+# Local variable values; supply remote values through HCP Terraform.
+**/*.tfvars
+**/*.tfvars.json
+
+# Keep Terraform configuration, .terraform.lock.hcl, and example values included.
